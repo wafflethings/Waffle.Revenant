@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32519.379
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Waffle.Revenant", "Waffle.Revenant\Waffle.Revenant.csproj", "{BE54FB60-9B7E-45A6-A40D-3795B11A846E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE54FB60-9B7E-45A6-A40D-3795B11A846E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE54FB60-9B7E-45A6-A40D-3795B11A846E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE54FB60-9B7E-45A6-A40D-3795B11A846E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE54FB60-9B7E-45A6-A40D-3795B11A846E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0F8C7939-2621-4F97-B0C9-35ADE4AB2C2D}
+	EndGlobalSection
+EndGlobal
