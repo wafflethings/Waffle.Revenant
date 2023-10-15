@@ -20,13 +20,14 @@ namespace Waffle.Revenant.States
 
         public IEnumerator DoStuff()
         {
-            JumpscareCanvas.Instance.FlashImage(Revenant.GetJumpscare());
+            JumpscareCanvas.Instance.FlashImage(Revenant);
             yield return new WaitForSeconds(Random.Range(0.2f, 0.4f));
 
             float mult = 10;
             Vector3 addedDirection = new();
 
-            switch (Random.Range(0, 3)) {
+            switch (Random.Range(0, 3))
+            {
                 case 0:
                     addedDirection = NewMovement.Instance.transform.forward * mult;
                     break;

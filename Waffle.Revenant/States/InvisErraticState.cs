@@ -16,12 +16,24 @@ namespace Waffle.Revenant.States
         {
             Revenant.StartCoroutine(Revenant.GoInvisible(TimeBeforeInvis, true));
             Revenant.StartCoroutine(EndInTime());
+            TeleportAroundPlayer(15);
+            Revenant.InstantLookAtPlayer();
+            Revenant.ForwardBoost = 40;
         }
 
         public IEnumerator EndInTime()
         {
-            yield return new WaitForSeconds(Random.Range(1f, 2f));
+            yield return new WaitForSeconds(Random.Range(0.5f, 2f));
             End();
+        }
+
+        public void TeleportAroundPlayer(float distance)
+        {
+            Vector3 spawnDir = Random.onUnitSphere * distance;
+            spawnDir.y = 0;
+            spawnDir.Normalize();
+
+            Revenant.transform.position = NewMovement.Instance.transform.position + spawnDir;
         }
     }
 }

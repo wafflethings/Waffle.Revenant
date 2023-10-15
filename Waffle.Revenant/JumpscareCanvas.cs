@@ -29,21 +29,21 @@ namespace Waffle.Revenant
         public Vector2 PitchRange;
         private Coroutine _lastFlash;
 
-        public void FlashImage(Sprite sprite)
+        public void FlashImage(Revenant rev)
         {
             if (_lastFlash != null)
             {
                 StopCoroutine(_lastFlash);
             }
 
-            _lastFlash = StartCoroutine(FlashImageRoutine(sprite));
+            _lastFlash = StartCoroutine(FlashImageRoutine(rev));
         }
 
-        private IEnumerator FlashImageRoutine(Sprite sprite)
+        private IEnumerator FlashImageRoutine(Revenant rev)
         {
             Image.color = new Color(1, 1, 1, 1);
             Image.gameObject.SetActive(true);
-            Image.sprite = sprite;
+            Image.sprite = rev.GetJumpscare();
 
             GlitchSound.pitch = UnityEngine.Random.Range(PitchRange.x, PitchRange.y);
             GlitchSound.Play();
@@ -56,7 +56,17 @@ namespace Waffle.Revenant
             }
             */
 
-            yield return new WaitForSeconds(0.25f);
+            yield return new WaitForSeconds(0.2f);
+
+            int rand = UnityEngine.Random.Range(0, 3);
+            Debug.Log("rolled rand " + rand);
+            if (rand == 1)
+            {
+                Debug.Log("showing");
+                StartCoroutine(FlashImageRoutine(rev));
+            }
+
+            yield return new WaitForSeconds(0.05f);
 
             Image.gameObject.SetActive(false);
             GlitchSound.Stop();
