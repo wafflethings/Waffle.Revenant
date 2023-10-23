@@ -34,6 +34,7 @@ namespace Waffle.Revenant
         [Header("Shockwave Stomp")]
         public GameObject ShockwaveIntro;
         public GameObject ShockwaveAttack;
+        public GameObject Hole;
 
         [Header("Jumpscares")]
         public Sprite[] JumpscarePool;
@@ -164,6 +165,11 @@ namespace Waffle.Revenant
                 float distance = Vector3.Distance(transform.position, NewMovement.Instance.transform.position);
                 float deacceleration = 40;
 
+                if (distance < 60)
+                {
+                    deacceleration -= 15;
+                }
+
                 if (distance < 30)
                 {
                     deacceleration += 20;
@@ -220,9 +226,11 @@ namespace Waffle.Revenant
             yield return StartCoroutine(GoVisible());
             Machine.anim.SetBool("Stomp First Frame", true);
             yield return new WaitForSeconds(0.1f);
-            yield return StompFall(position);
+            CreateParryFlash(ParryFlash);
+            Machine.parryable = true;
+            yield return StompFall(position, 2, true);
+            Machine.parryable = false;
             Instantiate(ShockwaveAttack, transform.position, Quaternion.identity);
-            yield return new WaitForSeconds(1f);
         }
 
         public IEnumerator StompEntrance(Vector3 position)
@@ -236,35 +244,98 @@ namespace Waffle.Revenant
             _hasStomped = true;
         }
 
-        public IEnumerator StompFall(Vector3 position)
+        public IEnumerator StompFall(Vector3 position, float speedMultiplier = 1, bool lockAtPlayer = false, bool doSplatter = false, bool doSplatterDamage = false)
         {
             transform.LookAt(position);
-            transform.rotation *= Quaternion.Euler(-90, 0, 0);
+            if (!doSplatter)
+            {
+                transform.rotation *= Quaternion.Euler(-90, 0, 0);
+            }
+            else
+            {
+                transform.Rotate(0, 180, 0, Space.Self);
+                position += transform.forward;
+            }
 
-            Vector3 pointOffset = Vector3.up * 3;
+            float pointOffset = 3;
             float rateOfFall = 15f;
+            float timeToWait = (1f / 24) * 33 / speedMultiplier;
 
-            //Debug.Log("1 " + Machine.anim.GetCurrentAnimatorClipInfo(0)[0].clip.name);
-            Machine.anim.SetBool("Stomp First Frame", false);
-            //Debug.Log("2 " + Machine.anim.GetCurrentAnimatorClipInfo(0)[0].clip.name);
-            yield return new WaitForSeconds((1f / 24) * 33); //till it starts falling fr
-            //Debug.Log("3 " + Machine.anim.GetCurrentAnimatorClipInfo(0)[0].clip.name);
+            if (!doSplatter)
+            {
+                Machine.anim.SetBool("Stomp First Frame", false);
+            }
+            else
+            {
+                Machine.anim.Play("Stomp Air");
+                rateOfFall = 50;
+                timeToWait = 0;
+            }
+
+            Machine.anim.speed *= speedMultiplier;
+            float time = 0;
+            while (time < timeToWait)
+            {
+                if (lockAtPlayer)
+                {
+                    if (Physics.Raycast(transform.position, NewMovement.Instance.transform.position - transform.position, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment)))
+                    {
+                        transform.LookAt(hit.point);
+                        transform.rotation *= Quaternion.Euler(-90, 0, 0);
+                        position = hit.point;
+                    }
+                }
+
+                time += Time.deltaTime;
+                yield return null;
+            }
+            Machine.anim.speed /= speedMultiplier;
+
 
             bool hasDone = false;
-            while (transform.position != position)
+            do
             {
-                if (transform.position.y < (position + pointOffset).y && !hasDone)
+                if (Vector3.Distance(transform.position, position) <= pointOffset && !hasDone)
                 {
-                    Debug.Log($"at {transform.position.y}, reached {(position + pointOffset).y}");
-                    Machine.anim.SetTrigger("Stomp Land");
+                    if (doSplatterDamage)
+                    {
+                        if (Physics.Raycast(transform.position, position - transform.position, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment)))
+                        {
+                            transform.rotation = Quaternion.LookRotation(hit.normal);
+
+                            if (hit.collider.tag == "Floor")
+                            {
+                                Debug.Log("found floor");
+                                Machine.anim.SetTrigger("Splat Floor");
+                            }
+                            else
+                            {
+                                Debug.Log("else wall");
+                                Machine.anim.SetTrigger("Splat Wall");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("backup");
+                            Machine.anim.SetTrigger("Splat Wall");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("reached stompland / resetrot");
+                        ResetRotation = true;
+                        Machine.anim.SetTrigger("Stomp Land");
+                    }
+
                     hasDone = true;
                 }
 
-                rateOfFall = Mathf.MoveTowards(rateOfFall, float.MaxValue, 75 * Time.deltaTime);
+                rateOfFall = Mathf.MoveTowards(rateOfFall, float.MaxValue, 75 * Time.deltaTime * speedMultiplier);
                 transform.position = Vector3.MoveTowards(transform.position, position, rateOfFall * Time.deltaTime);
-                
+
                 yield return null;
-            }
+            } 
+            while (transform.position != position);
         }
 
         public void InstantLookAtPlayer()
@@ -323,51 +394,82 @@ namespace Waffle.Revenant
                 return;
             }
 
-            if (Vector3.Distance(NewMovement.Instance.transform.position, transform.position) <= 25)
+            RevState = new ProjectileAttackState(this);
+            return;
+
+            if (RevState.GetState(out StompState ss) && ss.ShouldCombo)
             {
-                RevState = new RandomMeleeState(this);
+                if (Random.value < 0.75)
+                {
+                    RevState = new RandomMeleeState(this, true);
+                } 
+                else
+                {
+                    RevState = new ProjectileAttackState(this);
+                }
                 return;
             }
 
-            if (Vector3.Distance(NewMovement.Instance.transform.position, transform.position) > 25)
+            if (Vector3.Distance(NewMovement.Instance.transform.position, transform.position) <= 40)
             {
-                bool shouldStomp = false;
-                bool didHit = Physics.Raycast(transform.position, Vector3.up, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment));
-
-                if (didHit)
+                if (Random.value < 0.75)
                 {
-                    shouldStomp = Physics.CheckSphere(hit.point, 3);
+                    RevState = new RandomMeleeState(this);
                 }
                 else
                 {
-                    shouldStomp = true;
-                }
-
-                if (shouldStomp)
-                {
-                    RevState = new StompState(this, hit.distance);
-                }
-                else
-                {
-                    RevState = new InvisErraticState(this);
+                    CheckForStomp();
                 }
 
                 return;
             }
 
-            if (RevState.GetType() == typeof(PassiveState))
+            if (Vector3.Distance(NewMovement.Instance.transform.position, transform.position) > 40)
             {
-                RevState = new InvisErraticState(this);
+                if (Random.value < 0.2)
+                {
+                    RevState = new RandomMeleeState(this);
+                }
+                else
+                {
+                    CheckForStomp();
+                }
                 return;
             }
 
             RevState = new PassiveState(this);
         }
 
+        public void CheckForStomp()
+        {
+            bool didHit = Physics.Raycast(transform.position, Vector3.up, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment));
+
+            bool shouldStomp;
+            if (didHit && hit.distance > 10)
+            {
+                shouldStomp = Physics.CheckSphere(hit.point, 3);
+            }
+            else
+            {
+                shouldStomp = true;
+            }
+
+            if (shouldStomp)
+            {
+                Debug.Log("stomping with distance " + hit.distance);
+                RevState = new StompState(this, hit.distance);
+            }
+            else
+            {
+                RevState = new RandomMeleeState(this);
+            }
+        }
+
         // called by Machine.GoLimp with a SendMessage, thanks Hakita
         public void Death()
         {
             RevState.End();
+            Machine.anim.StopPlayback();
             ResetXRotation();
             StartCoroutine(DeathAnimation());
         }
@@ -389,7 +491,7 @@ namespace Waffle.Revenant
                 yield return new WaitForSeconds(0.25f);
             }
 
-            while (Machine.smr.material.GetFloat("_OpacScale") != 0)
+            while (Machine.smr.material.GetFloat("_OpacScale") != 0 && !Machine.eid.dead)
             {
                 Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 0, Time.deltaTime * 1.5f));
                 yield return null;
@@ -419,7 +521,7 @@ namespace Waffle.Revenant
             Instantiate(VisibilitySound, transform.position, transform.rotation);
             while (Machine.smr.material.GetFloat("_OpacScale") != 1)
             {
-                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 1, Time.deltaTime * 2));
+                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 1, Time.deltaTime * 3));
                 yield return null;
             }
         }
@@ -429,10 +531,13 @@ namespace Waffle.Revenant
             return Enraged ? EnragedJumpscarePool[Random.Range(0, EnragedJumpscarePool.Length - 1)] : JumpscarePool[Random.Range(0, JumpscarePool.Length - 1)];
         }
 
-        public IEnumerator Melee1()
+        public IEnumerator Melee1(bool goVisible = true)
         {
-            yield return StartCoroutine(GoVisible());
-            yield return new WaitForSeconds(0.1f);
+            if (goVisible)
+            {
+                yield return StartCoroutine(GoVisible());
+                yield return new WaitForSeconds(0.1f);
+            }
 
             LookAtPlayer = true;
 
@@ -467,10 +572,13 @@ namespace Waffle.Revenant
             ((RandomMeleeState)RevState).AttackDone = false;
         }
 
-        public IEnumerator Melee2()
+        public IEnumerator Melee2(bool goVisible = true)
         {
-            yield return StartCoroutine(GoVisible());
-            yield return new WaitForSeconds(0.1f);
+            if (goVisible)
+            {
+                yield return StartCoroutine(GoVisible());
+                yield return new WaitForSeconds(0.1f);
+            }
 
             LookAtPlayer = true;
             Machine.anim.SetTrigger("Melee2");
@@ -520,10 +628,13 @@ namespace Waffle.Revenant
             ((RandomMeleeState)RevState).AttackDone = false;
         }
 
-        public IEnumerator Melee3()
+        public IEnumerator Melee3(bool goVisible = true)
         {
-            yield return StartCoroutine(GoVisible());
-            yield return new WaitForSeconds(0.1f);
+            if (goVisible)
+            {
+                yield return StartCoroutine(GoVisible());
+                yield return new WaitForSeconds(0.1f);
+            }
 
             _currentPredicted = PlayerTracker.Instance.PredictPlayerPosition(1f);
             LookAtPlayer = true;
@@ -573,7 +684,7 @@ namespace Waffle.Revenant
             Machine.anim.SetTrigger("Range Attack");
             GameObject decoProjectile = Instantiate(ProjectileDecorative, ProjectileSpawn.transform);
             StartCoroutine(PrepareDecoProjectile(decoProjectile));
-            yield return new WaitForSeconds((1f / 24) * 51); //51 frames
+            yield return new WaitForSeconds((1f / 24) * 25); //51 frames
 
             Destroy(decoProjectile);
             GameObject realProjectile = Instantiate(Projectile, ProjectileSpawn.transform.position, ProjectileSpawn.transform.rotation);
@@ -585,7 +696,7 @@ namespace Waffle.Revenant
             ((ProjectileAttackState)RevState).AttackDone = true;
 
             ResetRotation = true;
-            yield return new WaitForSeconds((1f / 24) * 34); // 85
+            yield return new WaitForSeconds((1f / 24) * 17); // 85
             yield return StartCoroutine(GoInvisible(0, true));
             ResetXRotation();
             ResetRotation = false;
@@ -617,6 +728,11 @@ namespace Waffle.Revenant
         // sendmessage in machine
         public void GotParried()
         {
+            if (RevState.GetState(out StompState st) && !st.AttackDone)
+            {
+                StartCoroutine(st.StartSpiralling());
+            }
+
             Machine.parryable = false;
             HeadSwing.DamageStop();
             LeftArmSwing.DamageStop();

@@ -7,10 +7,12 @@ namespace Waffle.Revenant.States
     {
         public bool AttackDone = false;
         public bool Bounced = false;
-        private Coroutine CurrentAttack;
+        private Coroutine _currentAttack;
+        private bool _fromCombo;
 
-        public RandomMeleeState(Revenant revenant) : base(revenant)
+        public RandomMeleeState(Revenant revenant, bool originatesFromCombo = false) : base(revenant)
         {
+            _fromCombo = originatesFromCombo;
         }
 
         public override void Begin()
@@ -20,29 +22,35 @@ namespace Waffle.Revenant.States
 
         public IEnumerator DoStuff()
         {
-            JumpscareCanvas.Instance.FlashImage(Revenant);
-            yield return new WaitForSeconds(Random.Range(0.2f, 0.4f));
+            yield return null; //not my greatest code, because Begin runs in the revstate cctor, _fromCombo is set after this runs
 
-            float mult = 10;
-            Vector3 addedDirection = new();
-
-            switch (Random.Range(0, 3))
+            if (!_fromCombo)
             {
-                case 0:
-                    addedDirection = NewMovement.Instance.transform.forward * mult;
-                    break;
-                case 1:
-                    addedDirection = -NewMovement.Instance.transform.forward * mult;
-                    break;
-                case 2:
-                    addedDirection = -NewMovement.Instance.transform.right * mult;
-                    break;
-                case 3:
-                    addedDirection = NewMovement.Instance.transform.right * mult;
-                    break;
+                JumpscareCanvas.Instance.FlashImage(Revenant);
+                yield return new WaitForSeconds(Random.Range(0.2f, 0.4f));
+
+                float mult = 6;
+                Vector3 addedDirection = new();
+
+                switch (Random.Range(0, 3))
+                {
+                    case 0:
+                        addedDirection = NewMovement.Instance.transform.forward * mult;
+                        break;
+                    case 1:
+                        addedDirection = -NewMovement.Instance.transform.forward * mult;
+                        break;
+                    case 2:
+                        addedDirection = -NewMovement.Instance.transform.right * mult;
+                        break;
+                    case 3:
+                        addedDirection = NewMovement.Instance.transform.right * mult;
+                        break;
+                }
+
+                Revenant.transform.position = NewMovement.Instance.transform.position + addedDirection;
             }
 
-            Revenant.transform.position = NewMovement.Instance.transform.position + addedDirection;
             Revenant.InstantLookAtPlayer();
             IEnumerator chosenAttack = null;
 
@@ -63,15 +71,15 @@ namespace Waffle.Revenant.States
 
             Revenant.LookAtPlayer = true;
 
-            CurrentAttack = Revenant.StartCoroutine(chosenAttack);
-            yield return CurrentAttack;
+            _currentAttack = Revenant.StartCoroutine(chosenAttack);
+            yield return _currentAttack;
 
             End();
         }
 
         public override void End()
         {
-            Revenant.StopCoroutine(CurrentAttack);
+            Revenant.StopCoroutine(_currentAttack);
             base.End();
         }
 
