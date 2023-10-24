@@ -64,9 +64,26 @@ namespace Waffle.Revenant
         private Vector3 _currentPredicted;
         private bool _trackPlayer = false;
 
+        public float SpeedMultiplier
+        {
+            get
+            {
+                return (Machine.eid?.totalSpeedModifier + (Enraged ? 0.5f : 0)) ?? 1;
+            }
+        }
+
+        private float _frameTime
+        {
+            get
+            {
+                return (1f / 24f) / SpeedMultiplier;
+            }
+        }
+
         public void Start()
         {
             Machine = GetComponent<Machine>();
+            Machine.anim = GetComponentInChildren<Animator>();
             UpdateBuff();
 
             if (Machine.enabled)
@@ -76,8 +93,7 @@ namespace Waffle.Revenant
 
             if (UseStompAnimation)
             {
-                //for whatever reason, machine.anim is null here?
-                GetComponentInChildren<Animator>().SetBool("Stomp First Frame", true);
+                Machine.anim.SetBool("Stomp First Frame", true);
             }
             else
             {
@@ -88,10 +104,14 @@ namespace Waffle.Revenant
         // called by some sendmessage, thanks hakito
         public void UpdateBuff()
         {
+            Debug.Log("Revenant update buff!!");
+
             int newDamage = (int)(SwingDamage * (Machine.eid?.totalDamageModifier ?? 1f));
             HeadSwing.damage = newDamage;
             LeftArmSwing.damage = newDamage;
             RightArmSwing.damage = newDamage;
+
+            Machine.anim.speed = SpeedMultiplier;
         }
 
         public void Update()
@@ -185,13 +205,13 @@ namespace Waffle.Revenant
                     deacceleration += 50;
                 }
 
-                ForwardBoost = Mathf.MoveTowards(ForwardBoost, 0, Time.deltaTime * deacceleration);
-                transform.position += transform.forward * (ForwardBoost * Time.deltaTime) * Machine.eid.totalSpeedModifier;
+                ForwardBoost = Mathf.MoveTowards(ForwardBoost, 0, Time.deltaTime * deacceleration * SpeedMultiplier);
+                transform.position += transform.forward * (ForwardBoost * Time.deltaTime * SpeedMultiplier);
             }
 
             Vector3 projectileSpawnPos = (LeftYTracker.transform.position + RightYTracker.transform.position) / 2;
             //projectileSpawnPos.x = transform.position.x;
-            ProjectileSpawn.transform.position = projectileSpawnPos + (ProjectileSpawn.transform.forward * 2);
+            ProjectileSpawn.transform.position = projectileSpawnPos + (ProjectileSpawn.transform.forward * 5);
         }
 
         public void OnCollisionEnter(Collision col)
@@ -246,6 +266,8 @@ namespace Waffle.Revenant
 
         public IEnumerator StompFall(Vector3 position, float speedMultiplier = 1, bool lockAtPlayer = false, bool doSplatter = false, bool doSplatterDamage = false)
         {
+            speedMultiplier *= SpeedMultiplier;
+
             transform.LookAt(position);
             if (!doSplatter)
             {
@@ -259,7 +281,7 @@ namespace Waffle.Revenant
 
             float pointOffset = 3;
             float rateOfFall = 15f;
-            float timeToWait = (1f / 24) * 33 / speedMultiplier;
+            float timeToWait = _frameTime * 33 / speedMultiplier;
 
             if (!doSplatter)
             {
@@ -272,7 +294,7 @@ namespace Waffle.Revenant
                 timeToWait = 0;
             }
 
-            Machine.anim.speed *= speedMultiplier;
+            Machine.anim.speed = SpeedMultiplier * speedMultiplier;
             float time = 0;
             while (time < timeToWait)
             {
@@ -289,7 +311,7 @@ namespace Waffle.Revenant
                 time += Time.deltaTime;
                 yield return null;
             }
-            Machine.anim.speed /= speedMultiplier;
+            Machine.anim.speed = SpeedMultiplier;
 
 
             bool hasDone = false;
@@ -361,6 +383,8 @@ namespace Waffle.Revenant
                 CurrentEnragedEffect.transform.localPosition = Vector3.zero;
                 CurrentEnragedEffect.transform.localRotation = Quaternion.identity;
                 Enraged = true;
+
+                UpdateBuff();
             }
         }
 
@@ -368,16 +392,35 @@ namespace Waffle.Revenant
         {
             Destroy(CurrentEnragedEffect);
 
+            Enraged = false;
             float oldMaterial = Machine.smr.material.GetFloat("_OpacScale");
             Machine.smr.material = new(DefaultMaterial);
             Machine.smr.material.SetFloat("_OpacScale", oldMaterial);
+
+            UpdateBuff();
+        }
+
+        public IEnumerator DeenrageAfterTime()
+        {
+            for (int i = 0; i < 30; i++)
+            {
+                if (Random.value > 0.75f)
+                {
+                    JumpscareCanvas.Instance.FlashImage(this);
+                }
+                yield return new WaitForSeconds(0.5f); //sums to 15s
+            }
+            
+            Deenrage();
         }
 
         public void OnHurt(string origin)
         {
+            Debug.Log("hit by " + origin);
             if (Machine.eid.hitter == "coin" || origin.Contains("Coin.ReflectRevolver")) //this sucks but i cbf to write a transpiler so fuck you
             {
                 Enrage();
+                StartCoroutine(DeenrageAfterTime());
             }
         }
 
@@ -394,9 +437,6 @@ namespace Waffle.Revenant
                 return;
             }
 
-            RevState = new ProjectileAttackState(this);
-            return;
-
             if (RevState.GetState(out StompState ss) && ss.ShouldCombo)
             {
                 if (Random.value < 0.75)
@@ -412,7 +452,7 @@ namespace Waffle.Revenant
 
             if (Vector3.Distance(NewMovement.Instance.transform.position, transform.position) <= 40)
             {
-                if (Random.value < 0.75)
+                if (Random.value < (!Enraged ? 0.75 : 0.5f))
                 {
                     RevState = new RandomMeleeState(this);
                 }
@@ -426,7 +466,7 @@ namespace Waffle.Revenant
 
             if (Vector3.Distance(NewMovement.Instance.transform.position, transform.position) > 40)
             {
-                if (Random.value < 0.2)
+                if (Random.value < 0.2 && !Enraged)
                 {
                     RevState = new RandomMeleeState(this);
                 }
@@ -488,12 +528,12 @@ namespace Waffle.Revenant
             if (invisAnimation)
             {
                 Machine.anim.SetTrigger("Turn Invis");
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.25f / SpeedMultiplier);
             }
 
             while (Machine.smr.material.GetFloat("_OpacScale") != 0 && !Machine.eid.dead)
             {
-                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 0, Time.deltaTime * 1.5f));
+                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 0, Time.deltaTime * 1.5f * SpeedMultiplier));
                 yield return null;
             }
 
@@ -521,7 +561,7 @@ namespace Waffle.Revenant
             Instantiate(VisibilitySound, transform.position, transform.rotation);
             while (Machine.smr.material.GetFloat("_OpacScale") != 1)
             {
-                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 1, Time.deltaTime * 3));
+                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 1, Time.deltaTime * 3 * SpeedMultiplier));
                 yield return null;
             }
         }
@@ -536,7 +576,7 @@ namespace Waffle.Revenant
             if (goVisible)
             {
                 yield return StartCoroutine(GoVisible());
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.1f / SpeedMultiplier);
             }
 
             LookAtPlayer = true;
@@ -546,7 +586,7 @@ namespace Waffle.Revenant
             CreateParryFlash(ParryFlash);
             _trackPlayer = true;
 
-            yield return new WaitForSeconds((1f / 24) * 6); // 24fps, this is 6 frames
+            yield return new WaitForSeconds(_frameTime * 6); // 24fps, this is 6 frames
 
             ForwardBoost = 70f;
             if (Machine.parryable)
@@ -554,16 +594,16 @@ namespace Waffle.Revenant
                 HeadSwing.DamageStart();
             }
 
-            yield return new WaitForSeconds((1f / 24) * 17);
+            yield return new WaitForSeconds(_frameTime * 17);
             _trackPlayer = false;
-            yield return new WaitForSeconds((1f / 24) * 18); // totals to 41 frames
+            yield return new WaitForSeconds(_frameTime * 18); // totals to 41 frames
 
             Machine.parryable = false;
             HeadSwing.DamageStop();
             ResetRotation = true;
             ((RandomMeleeState)RevState).AttackDone = true;
 
-            yield return new WaitForSeconds((1f / 24) * 21); // totals to 62 frames
+            yield return new WaitForSeconds(_frameTime * 21); // totals to 62 frames
             LookAtPlayer = false;
             yield return StartCoroutine(GoInvisible());
 
@@ -577,7 +617,7 @@ namespace Waffle.Revenant
             if (goVisible)
             {
                 yield return StartCoroutine(GoVisible());
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.1f / SpeedMultiplier);
             }
 
             LookAtPlayer = true;
@@ -585,15 +625,15 @@ namespace Waffle.Revenant
             Machine.parryable = false;
             CreateParryFlash(NoParryFlash);
 
-            yield return new WaitForSeconds((1f / 24) * 5); // 5 frames
+            yield return new WaitForSeconds(_frameTime * 5); // 5 frames
 
             _currentPredicted = PlayerTracker.Instance.PredictPlayerPosition(0.5f);
             ForwardBoost = 60f;
             LeftArmSwing.DamageStart();
 
-            yield return new WaitForSeconds((1f / 24) * 5); // totals to 10 frames
+            yield return new WaitForSeconds(_frameTime * 5); // totals to 10 frames
             //LookAtPlayer = false;
-            yield return new WaitForSeconds((1f / 24) * 16); // totals to 26 frames
+            yield return new WaitForSeconds(_frameTime * 16); // totals to 26 frames
 
             LeftArmSwing.DamageStop();
             LookAtPlayer = false;
@@ -601,7 +641,7 @@ namespace Waffle.Revenant
             CreateParryFlash(ParryFlash);
             InstantLookAtPlayer();
 
-            yield return new WaitForSeconds((1f / 24) * 5); // totals to 31 frames
+            yield return new WaitForSeconds(_frameTime * 5); // totals to 31 frames
             LookAtPlayer = true;
             _currentPredicted = PlayerTracker.Instance.PredictPlayerPosition(0.5f);
 
@@ -611,9 +651,9 @@ namespace Waffle.Revenant
                 RightArmSwing.DamageStart();
             }
 
-            yield return new WaitForSeconds((1f / 24) * 3); // totals to 34 frames
+            yield return new WaitForSeconds(_frameTime * 3); // totals to 34 frames
             //LookAtPlayer = false;
-            yield return new WaitForSeconds((1f / 24) * 7); // totals to 41 frames
+            yield return new WaitForSeconds(_frameTime * 7); // totals to 41 frames
 
             LookAtPlayer = false;
             Machine.parryable = false;
@@ -621,7 +661,7 @@ namespace Waffle.Revenant
 
             ResetRotation = true;
             ((RandomMeleeState)RevState).AttackDone = true;
-            yield return new WaitForSeconds((1f / 24) * 31); // totals to 72 frames
+            yield return new WaitForSeconds(_frameTime * 31); // totals to 72 frames
             yield return StartCoroutine(GoInvisible());
             ResetXRotation();
             ResetRotation = false;
@@ -633,30 +673,30 @@ namespace Waffle.Revenant
             if (goVisible)
             {
                 yield return StartCoroutine(GoVisible());
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.1f / SpeedMultiplier);
             }
 
             _currentPredicted = PlayerTracker.Instance.PredictPlayerPosition(1f);
             LookAtPlayer = true;
             Machine.anim.SetTrigger("Melee3");
 
-            yield return new WaitForSeconds((1f / 24) * 4); // 4 frames
+            yield return new WaitForSeconds(_frameTime * 4); // 4 frames
 
             Machine.parryable = false;
             CreateParryFlash(NoParryFlash);
 
-            yield return new WaitForSeconds((1f / 24) * 3); // totals to 7 frames
+            yield return new WaitForSeconds(_frameTime * 3); // totals to 7 frames
             _trackPlayer = true;
 
             ForwardBoost = 60f;
             LeftArmSwing.DamageStart();
             RightArmSwing.DamageStart();
 
-            yield return new WaitForSeconds((1f / 24) * 5); // totals to 12 frames
+            yield return new WaitForSeconds(_frameTime * 5); // totals to 12 frames
 
             //LookAtPlayer = false;
 
-            yield return new WaitForSeconds((1f / 24) * 16); // totals to 28 frames
+            yield return new WaitForSeconds(_frameTime * 16); // totals to 28 frames
 
             _trackPlayer = false;
             LookAtPlayer = false;
@@ -665,7 +705,7 @@ namespace Waffle.Revenant
 
             ResetRotation = true;
             ((RandomMeleeState)RevState).AttackDone = true;
-            yield return new WaitForSeconds((1f / 24) * 24); // totals to 52 frames
+            yield return new WaitForSeconds(_frameTime * 24); // totals to 52 frames
             yield return StartCoroutine(GoInvisible());
             ResetXRotation();
             ResetRotation = false;
@@ -684,19 +724,24 @@ namespace Waffle.Revenant
             Machine.anim.SetTrigger("Range Attack");
             GameObject decoProjectile = Instantiate(ProjectileDecorative, ProjectileSpawn.transform);
             StartCoroutine(PrepareDecoProjectile(decoProjectile));
-            yield return new WaitForSeconds((1f / 24) * 25); //51 frames
+            yield return new WaitForSeconds(_frameTime * 25); //51 frames
 
             Destroy(decoProjectile);
             GameObject realProjectile = Instantiate(Projectile, ProjectileSpawn.transform.position, ProjectileSpawn.transform.rotation);
             Projectile projectile = realProjectile.GetComponent<Projectile>();
             projectile.target = NewMovement.Instance.transform;
-            projectile.speed = 10f * Machine.eid.totalSpeedModifier;
-            projectile.damage *= Machine.eid.totalDamageModifier;
+            projectile.speed = 5f * Machine.eid.totalSpeedModifier;
+
+            foreach (Projectile subProj in realProjectile.GetComponentsInChildren<Projectile>())
+            {
+                subProj.damage *= Machine.eid.totalDamageModifier;
+            }
+
             LookAtPlayer = false;
             ((ProjectileAttackState)RevState).AttackDone = true;
 
             ResetRotation = true;
-            yield return new WaitForSeconds((1f / 24) * 17); // 85
+            yield return new WaitForSeconds(_frameTime * 17); // 85
             yield return StartCoroutine(GoInvisible(0, true));
             ResetXRotation();
             ResetRotation = false;
@@ -715,7 +760,7 @@ namespace Waffle.Revenant
             {
                 source.volume = startVol * (timeElapsed / 3);
                 projectile.transform.localScale = startScale * (timeElapsed / 3);
-                timeElapsed += Time.deltaTime;
+                timeElapsed += Time.deltaTime * SpeedMultiplier;
                 yield return null;
             }
         }
@@ -745,7 +790,7 @@ namespace Waffle.Revenant
             Machine.smr.material.SetFloat("_OpacScale", 1);
             Machine.anim.Play("Death");
 
-            yield return new WaitForSeconds((1f / 24) * 75); // i will die before i use anim events
+            yield return new WaitForSeconds(_frameTime * 75); // i will die before i use anim events
 
             Machine.anim.enabled = false;
             foreach (Rigidbody rb in GetComponentsInChildren<Rigidbody>())

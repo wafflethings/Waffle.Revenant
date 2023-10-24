@@ -27,7 +27,7 @@ namespace Waffle.Revenant.States
             if (!_fromCombo)
             {
                 JumpscareCanvas.Instance.FlashImage(Revenant);
-                yield return new WaitForSeconds(Random.Range(0.2f, 0.4f));
+                yield return new WaitForSeconds(Random.Range(0.2f, 0.4f) / Revenant.SpeedMultiplier);
 
                 float mult = 6;
                 Vector3 addedDirection = new();

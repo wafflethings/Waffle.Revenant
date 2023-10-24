@@ -30,7 +30,7 @@ namespace Waffle.Revenant.States
         public IEnumerator DoStuff()
         {
             JumpscareCanvas.Instance.FlashImage(Revenant);
-            yield return new WaitForSeconds(Random.Range(0.2f, 0.4f));
+            yield return new WaitForSeconds(Random.Range(0.2f, 0.4f) / Revenant.SpeedMultiplier);
 
             float mult = 5;
             Vector3 addedDirection = new();
@@ -67,15 +67,15 @@ namespace Waffle.Revenant.States
 
             float rand = Random.value;
             Debug.Log($"Random value is " + rand);
-            if (rand < 0.75f)
+            if (rand < 0.75f || Revenant.Enraged)
             {
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(0.5f / Revenant.SpeedMultiplier);
                 ShouldCombo = true;
                 Debug.Log("should combo???");
             }
             else
             {
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(1f / Revenant.SpeedMultiplier);
             }
 
             Revenant.ResetRotation = false;
@@ -107,7 +107,7 @@ namespace Waffle.Revenant.States
                 Object.Instantiate(Revenant.Hole, Revenant.transform.position + Revenant.transform.up * 2, Revenant.transform.rotation);
             }
 
-            yield return new WaitForSeconds(2.5f);
+            yield return new WaitForSeconds(2.5f / Revenant.SpeedMultiplier);
             yield return Revenant.GoInvisible(0, false);
 
             Revenant.ResetRotation = false;

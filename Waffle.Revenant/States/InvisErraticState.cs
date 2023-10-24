@@ -23,7 +23,7 @@ namespace Waffle.Revenant.States
 
         public IEnumerator EndInTime()
         {
-            yield return new WaitForSeconds(Random.Range(0.5f, 2f));
+            yield return new WaitForSeconds(Random.Range(0.5f, 2f) / Revenant.SpeedMultiplier);
             End();
         }
 
