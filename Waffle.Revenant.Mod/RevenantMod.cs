@@ -15,13 +15,25 @@ namespace Waffle.Revenant.Mod
         public static bool DoneSpawnMenu = false;
         public static bool DoneTerminal = false;
 
-        public static AssetBundle Assets = AssetBundle.LoadFromFile(Path.Combine(ModPath(), "revenant_assets.bundle"));
-        public static SpawnableObject RevenantSpawnable = Assets.LoadAsset<SpawnableObject>("Revenant Spawnable.asset");
+        public static AssetBundle Assets;
+        public static SpawnableObject RevenantSpawnable;
+        public static GameObject RevenantAssets;
 
         public void Start()
         {
-            Debug.Log("Loaded Revenant mod!! :3");
+            Assembly.LoadFrom(Path.Combine(ModPath(), "Waffle.Revenant.dll"));
+            Assets = AssetBundle.LoadFromFile(Path.Combine(ModPath(), "revenant_assets.bundle"));
+            RevenantSpawnable = Assets.LoadAsset<SpawnableObject>("Revenant Spawnable.asset");
+            RevenantAssets = Assets.LoadAsset<GameObject>("Revenant Assets.prefab");
             Harmony.PatchAll(typeof(RevenantMod));
+
+            Debug.Log("Loaded Revenant mod successfully!! :3");
+        }
+
+        [HarmonyPatch(typeof(NewMovement), nameof(NewMovement.Start)), HarmonyPrefix]
+        public static void CreateAssets()
+        {
+            Instantiate(RevenantAssets);
         }
 
         [HarmonyPatch(typeof(SpawnMenu), nameof(SpawnMenu.Awake)), HarmonyPrefix]

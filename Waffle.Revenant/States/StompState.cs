@@ -90,7 +90,13 @@ namespace Waffle.Revenant.States
             End();
         }
 
-        public IEnumerator StartSpiralling()
+        public IEnumerator StartSpirallingAndSet()
+        {
+            _currentAttack = Revenant.StartCoroutine(StartSpiralling());
+            yield return _currentAttack;
+        }
+        
+        private IEnumerator StartSpiralling()
         {
             Revenant.StopCoroutine(_currentAttack);
             Revenant.Machine.anim.speed = _startAnimSpeed;

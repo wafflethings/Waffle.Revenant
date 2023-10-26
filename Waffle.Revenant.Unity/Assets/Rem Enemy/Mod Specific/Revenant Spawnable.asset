@@ -19,9 +19,9 @@ MonoBehaviour:
   type: SUPREME HUSK
   description: "Husks are physical manifestations of the souls of the damned; the
     higher the value, the higher the power. But this raises the question: what happens
-    when the soul is too dim to generate an husk? The answer to that question is
-    the Revenant. \n\nOnce living a life ruled by hopelessness, sadness and misery,
-    a Revenant's soul was unable to fully manifest even once they finally embraced
+    when the soul is too dim to generate a husk? The answer to that question is the
+    Revenant. \n\nOnce living a life ruled by hopelessness, sadness and misery, a
+    Revenant's soul was unable to fully manifest even once they finally embraced
     death - leaving them forever trapped, phasing between time and space. Now cursed
     with this ultimate punishment, they simply find a sadistic pleasure in torturing
     any soul they come into contact with. \n\nThey are recognized as husks that managed
@@ -44,7 +44,11 @@ MonoBehaviour:
 
     - Many
     attacks can be parried; but the stomp attack will reflect the Revenant, and stun
-    it if it hits a wall. This also deals great damage.'
+    it if it hits a wall. This also deals great damage.
+
+
+    - As its projectiles
+    bounce, you have several chances to parry them for a full heal.'
   gameObject: {fileID: 1813229485151517, guid: 9123441f8189da546814387c9fe81547, type: 3}
   preview: {fileID: 1813229485151517, guid: 1b0294eeecdd41c47a61010c7e8e6082, type: 3}
   iconKey: 
@@ -54,6 +58,6 @@ MonoBehaviour:
   spawnableType: 0
   armOffset: {x: 0, y: 0, z: 0}
   armRotationOffset: {x: 0, y: 0, z: 0}
-  menuOffset: {x: 0, y: 0, z: 0}
+  menuOffset: {x: 0, y: -0.25, z: 0}
   spawnOffset: 0
   isWater: 0

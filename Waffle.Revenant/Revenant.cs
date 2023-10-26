@@ -533,10 +533,10 @@ namespace Waffle.Revenant
         // called by Machine.GoLimp with a SendMessage, thanks Hakita
         public void Death()
         {
-            RevState.End();
-            Machine.anim.StopPlayback();
             ResetXRotation();
             StartCoroutine(DeathAnimation());
+            Machine.anim.StopPlayback();
+            RevState.End();
         }
 
         public void ResetXRotation()
@@ -804,7 +804,7 @@ namespace Waffle.Revenant
         {
             if (RevState.GetState(out StompState st) && !st.AttackDone)
             {
-                StartCoroutine(st.StartSpiralling());
+                StartCoroutine(st.StartSpirallingAndSet());
             }
 
             Machine.parryable = false;

@@ -2461,10 +2461,10 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24300002, guid: de1a7104454c38d4698485ae4e0ca225,
     type: 2}
-  m_audioClip: {fileID: 8300000, guid: 8609e043e2c5cf045a52650929417a82, type: 3}
+  m_audioClip: {fileID: 8300000, guid: ce8304f4e638993488ec72e56661d5b6, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
-  m_Pitch: 1
+  m_Pitch: -3
   Loop: 0
   Mute: 0
   Spatialize: 1
@@ -2562,7 +2562,6 @@ MonoBehaviour:
   useAudioLength: 0
   time: 5
   randomizer: 0
-  affectedByNoCooldowns: 0
 --- !u!114 &114412913279206732
 MonoBehaviour:
   m_ObjectHideFlags: 0

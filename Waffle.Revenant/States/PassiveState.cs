@@ -15,8 +15,8 @@ namespace Waffle.Revenant.States
         {
             GoingRight = Random.value >= 0.5f;
 
-            Revenant.Machine.anim.SetBool("Going Left", !GoingRight);
-            Revenant.Machine.anim.SetBool("Going Right", GoingRight);
+            Revenant.Machine.anim.SetBool("Float Left", !GoingRight);
+            Revenant.Machine.anim.SetBool("Float Right", GoingRight);
 
             Revenant.StartCoroutine(EndInTime());
         }
@@ -29,8 +29,9 @@ namespace Waffle.Revenant.States
 
         public override void End()
         {
-            Revenant.Machine.anim.SetBool("Going Left", false);
-            Revenant.Machine.anim.SetBool("Going Right", false);
+            Debug.Log($"rev: {Revenant}, mac: {Revenant.Machine}, anim: {Revenant.Machine.anim}");
+            Revenant.Machine.anim.SetBool("Float Left", false);
+            Revenant.Machine.anim.SetBool("Float Right", false);
 
             base.End();
         }

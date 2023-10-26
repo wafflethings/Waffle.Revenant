@@ -53,7 +53,7 @@ MonoBehaviour:
   m_Script: {fileID: 1046334395, guid: 2a7553ec5ed234a44925de780493d494, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpawnType: 0
+  SpawnType: 2
   SpawnEffect: {fileID: 4804168530911903040}
   DefaultMaterial: {fileID: 2100000, guid: 835d115dcfcb0cb4c89e67b41c10ec14, type: 2}
   EnragedMaterial: {fileID: 2100000, guid: 62990028a64d1e546baa52bd2222bc64, type: 2}
@@ -92,10 +92,10 @@ MonoBehaviour:
   ProjectileSound: {fileID: 0}
   VisibilitySound: {fileID: 1441756422800620, guid: fd83de899685cea45af81777e1361d5e,
     type: 3}
-  ParryFlash: {fileID: 1943654623744095, guid: abe5fd6a88eeb0c4db5ae5e02eac10ff, type: 3}
-  NoParryFlash: {fileID: 1097836162076791, guid: 01620d880106d6449b3a09c74c290c86,
+  ParryFlash: {fileID: 1659085721669404, guid: abe5fd6a88eeb0c4db5ae5e02eac10ff, type: 3}
+  NoParryFlash: {fileID: 1659085721669404, guid: 01620d880106d6449b3a09c74c290c86,
     type: 3}
-  EnragedEffect: {fileID: 1118535617821204, guid: 7f24ffe1ed7acf847a746c060e3ada89,
+  EnragedEffect: {fileID: 5593947671456654171, guid: 7f24ffe1ed7acf847a746c060e3ada89,
     type: 3}
   Machine: {fileID: 2375631561319518837}
   ForwardBoost: 0
@@ -116,41 +116,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba1029699a926c94cb6dd5c08b146f24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zombie: {fileID: 0}
-  spider: {fileID: 0}
-  machine: {fileID: 0}
-  statue: {fileID: 0}
-  wicked: {fileID: 0}
-  drone: {fileID: 0}
-  idol: {fileID: 0}
   enemyClass: 1
   enemyType: 5
   spawnIn: 0
   spawnEffect: {fileID: 1995147914167856, guid: bcbfc3d47af1b2d468eb9035b4bfc2ac,
     type: 3}
   health: 1.5
-  hitter: 
-  hitterAttributes: 
-  hitterWeapons: []
   weaknesses: []
   weaknessMultipliers: []
   totalDamageTakenMultiplier: 1
   weakPoint: {fileID: 6722949078746073962}
-  exploded: 0
   dead: 0
-  usingDoor: {fileID: 0}
   ignoredByEnemies: 0
-  nailsAmount: 0
-  nails: []
   useBrakes: 0
   bigEnemy: 1
   unbounceable: 0
   poise: 0
-  pulledByMagnet: 0
-  stuckMagnets: []
-  drillers: []
-  underwater: 0
-  checkingSpawnStatus: 1
   flying: 1
   dontCountAsKills: 0
   dontUnlockBestiary: 0
@@ -159,29 +140,17 @@ MonoBehaviour:
   onDeath:
     m_PersistentCalls:
       m_Calls: []
-  gce: {fileID: 0}
-  blessingGlows: []
-  buffTargeter: {fileID: 0}
   difficultyOverride: -1
-  hooked: 0
-  burners: []
-  harpooned: 0
   hookIgnore: 0
   sandified: 0
   blessed: 0
   radianceTier: 0
   healthBuff: 0
   healthBuffModifier: 2.5
-  healthBuffRequests: 0
   speedBuff: 0
   speedBuffModifier: 2
-  speedBuffRequests: 0
   damageBuff: 0
   damageBuffModifier: 1.5
-  damageBuffRequests: 0
-  totalSpeedModifier: 1
-  totalDamageModifier: 1
-  totalHealthModifier: 1
   buffUnaffectedRenderers: []
   overrideFullName: 
 --- !u!54 &54663947636052434
@@ -216,16 +185,14 @@ MonoBehaviour:
   limp: 0
   chest: {fileID: 5103749168181070401}
   hurtSounds:
-  - {fileID: 8300000, guid: c3fbcea196719bf4eb0c8795c98edfa4, type: 3}
-  scalc: {fileID: 0}
+  - {fileID: 8300000, guid: 0c3e88e079c29b647a39a935c88adc3f, type: 3}
   deadMaterial: {fileID: 0}
   smr: {fileID: 1718561962834542162}
-  deathSound: {fileID: 8300000, guid: 6e61d9c4427f6244d8adb1a95f510313, type: 3}
+  deathSound: {fileID: 8300000, guid: a7fd8c01ff76d5b4db5056da0967ccc1, type: 3}
   scream: {fileID: 0}
   bigKill: 1
   parryable: 0
   partiallyParryable: 0
-  parryables: []
   destroyOnDeath: []
   symbiote: {fileID: 0}
   grounded: 0
@@ -237,8 +204,7 @@ MonoBehaviour:
   noFallDamage: 1
   dontDie: 0
   dismemberment: 0
-  specialDeath: 0
-  musicRequested: 0
+  specialDeath: 1
   onDeath:
     m_PersistentCalls:
       m_Calls: []
@@ -439,7 +405,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &1639450854946770343
 GameObject:
   m_ObjectHideFlags: 0
@@ -515,7 +480,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b86f5d832341fe44d82c903c293e3e82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
   type: 5
   playerOnly: 0
   playerBeenHit: 0
@@ -525,10 +489,8 @@ MonoBehaviour:
   knockBackDirectionOverride: 0
   knockBackDirection: {x: 0, y: 0, z: 0}
   strong: 1
-  col: {fileID: 0}
   additionalColliders: []
   useRaycastCheck: 1
-  damaging: 0
   ignoreSlidingPlayer: 0
   startActive: 0
   interpolateBetweenFrames: 0
@@ -631,7 +593,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!54 &6371833055051308676
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -718,7 +679,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &2624066555304020133
 GameObject:
   m_ObjectHideFlags: 0
@@ -841,7 +801,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &2897979280675249997
 GameObject:
   m_ObjectHideFlags: 0
@@ -886,7 +845,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b86f5d832341fe44d82c903c293e3e82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
   type: 5
   playerOnly: 0
   playerBeenHit: 0
@@ -896,10 +854,8 @@ MonoBehaviour:
   knockBackDirectionOverride: 0
   knockBackDirection: {x: 0, y: 0, z: 0}
   strong: 1
-  col: {fileID: 0}
   additionalColliders: []
   useRaycastCheck: 1
-  damaging: 0
   ignoreSlidingPlayer: 0
   startActive: 0
   interpolateBetweenFrames: 0
@@ -1002,7 +958,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &4256813507559459275
 GameObject:
   m_ObjectHideFlags: 0
@@ -1061,7 +1016,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!54 &7724269662020734371
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1164,7 +1118,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &5326708744895965344
 GameObject:
   m_ObjectHideFlags: 0
@@ -1330,7 +1283,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &5952233187636703480
 GameObject:
   m_ObjectHideFlags: 0
@@ -1389,7 +1341,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!54 &113812307227033012
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1492,7 +1443,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &6722949078746073962
 GameObject:
   m_ObjectHideFlags: 0
@@ -1567,7 +1517,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &7489889589344925262
 GameObject:
   m_ObjectHideFlags: 0
@@ -1618,7 +1567,6 @@ MonoBehaviour:
   forEnemies: 0
   notIfEnemiesDisabled: 0
   onlyIfPlayerIsAlive: 0
-  activated: 0
   delay: 0
   obac: {fileID: 0}
   onlyCheckObacOnce: 0
@@ -1654,28 +1602,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b17040342ec32c4cb40706df2caa0e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  neverOutlineAndRemoveSimplifier: 0
   enemyScriptHandlesEnrage: 0
   enemyRootTransform: {fileID: 7242718446512856103}
   radiantSubmeshesToIgnore: 
   enragedMaterial: {fileID: 2100000, guid: 62990028a64d1e546baa52bd2222bc64, type: 2}
-  originalMaterial: {fileID: 0}
-  originalMaterial2: {fileID: 0}
-  originalMaterial3: {fileID: 0}
   simplifiedMaterial: {fileID: 2100000, guid: ac492dc8111f26547b0e767d5409a63f, type: 2}
   simplifiedMaterial2: {fileID: 0}
   simplifiedMaterial3: {fileID: 0}
   enragedSimplifiedMaterial: {fileID: 2100000, guid: f8c930d53fd3c204f83f28936ed74260,
     type: 2}
-  enraged: 0
-  lmask:
-    serializedVersion: 2
-    m_Bits: 0
-  enemyColorType: 0
   ignoreCustomColor: 0
-  eid: {fileID: 0}
-  isHat: 0
-  radianceEffect: {fileID: 0}
   matList: []
 --- !u!95 &5852492764863695808
 Animator:
@@ -1685,7 +1621,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8054862348652971677}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: a27b645fc1b955f4c9d3acf59d8ce4ad, type: 2}
   m_CullingMode: 1
@@ -1782,7 +1718,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!54 &7296673062385861606
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1869,7 +1804,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!54 &2392713748347146070
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1956,7 +1890,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff3e29dbb141044287b8888b15a0e84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
 --- !u!1 &8938038487899942965
 GameObject:
   m_ObjectHideFlags: 0
@@ -2001,7 +1934,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b86f5d832341fe44d82c903c293e3e82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eid: {fileID: 0}
   type: 5
   playerOnly: 0
   playerBeenHit: 0
@@ -2011,10 +1943,8 @@ MonoBehaviour:
   knockBackDirectionOverride: 0
   knockBackDirection: {x: 0, y: 0, z: 0}
   strong: 1
-  col: {fileID: 0}
   additionalColliders: []
   useRaycastCheck: 1
-  damaging: 0
   ignoreSlidingPlayer: 0
   startActive: 0
   interpolateBetweenFrames: 0
