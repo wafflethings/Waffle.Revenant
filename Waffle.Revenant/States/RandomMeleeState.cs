@@ -57,7 +57,6 @@ namespace Waffle.Revenant.States
                 }
             }
 
-            Revenant.InstantLookAtPlayer();
             Revenant.transform.position += Revenant.transform.forward * 2;
             IEnumerator chosenAttack = null;
 
@@ -76,8 +75,7 @@ namespace Waffle.Revenant.States
                     break;
             }
 
-            Revenant.LookAtPlayer = true;
-
+            Revenant.InstantLookAtPlayer();
             _currentAttack = Revenant.StartCoroutine(chosenAttack);
             yield return _currentAttack;
 
