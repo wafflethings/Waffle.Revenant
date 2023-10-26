@@ -31,12 +31,15 @@ namespace Waffle.Revenant
 
         public void FlashImage(Revenant rev)
         {
-            if (_lastFlash != null)
+            if (rev.JumpscaresEnabled)
             {
-                StopCoroutine(_lastFlash);
-            }
+                if (_lastFlash != null)
+                {
+                    StopCoroutine(_lastFlash);
+                }
 
-            _lastFlash = StartCoroutine(FlashImageRoutine(rev));
+                _lastFlash = StartCoroutine(FlashImageRoutine(rev));
+            }
         }
 
         private IEnumerator FlashImageRoutine(Revenant rev)

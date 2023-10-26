@@ -17,6 +17,11 @@ namespace Waffle.Revenant
         public RevenantSpawn SpawnType = RevenantSpawn.StompFromSky;
         public GameObject SpawnEffect;
 
+        [Header("Jumpscares")]
+        public bool JumpscaresEnabled = true;
+        public Sprite[] JumpscarePool;
+        public Sprite[] EnragedJumpscarePool;
+
         [Header("Materials")]
         public Material DefaultMaterial;
         public Material EnragedMaterial;
@@ -39,10 +44,6 @@ namespace Waffle.Revenant
         public GameObject ShockwaveAttack;
         public GameObject Hole;
 
-        [Header("Jumpscares")]
-        public Sprite[] JumpscarePool;
-        public Sprite[] EnragedJumpscarePool;
-
         [Header("Sound Effects")]
         public GameObject[] SwingAttackSounds;
         public GameObject ProjectileSound;
@@ -52,6 +53,9 @@ namespace Waffle.Revenant
         public GameObject ParryFlash;
         public GameObject NoParryFlash;
         public GameObject EnragedEffect;
+        public GameObject SeasonalHatScaler;
+        public Light Glow;
+        private float _glowStartRange;
 
         public static float DownOffsetMultiplier = 2.5f;
         [HideInInspector] public RevenantState RevState = null;
@@ -92,6 +96,8 @@ namespace Waffle.Revenant
             Machine = GetComponent<Machine>();
             Machine.anim = GetComponentInChildren<Animator>();
             UpdateBuff();
+
+            _glowStartRange = Glow.range;
 
             if (Machine.enabled)
             {
@@ -241,9 +247,26 @@ namespace Waffle.Revenant
             Vector3 projectileSpawnPos = (LeftYTracker.transform.position + RightYTracker.transform.position) / 2;
             ProjectileSpawn.transform.position = projectileSpawnPos + (ProjectileSpawn.transform.forward * 5);
 
-            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 2f, LayerMaskDefaults.Get(LMD.Environment)) && ForwardBoost > 0)
+            if (ForwardBoost > 0)
             {
-                Reflect(hit.normal);
+                Vector3 normal = Vector3.zero;
+                if (Physics.Raycast(transform.position + Vector3.up * 3, transform.forward, out RaycastHit hit1, 2f, LayerMaskDefaults.Get(LMD.Environment)))
+                {
+                    normal = hit1.normal;
+                }
+                else if (Physics.Raycast(transform.position, transform.forward + Vector3.up, out RaycastHit hit2, 2f, LayerMaskDefaults.Get(LMD.Environment)))
+                {
+                    normal = hit2.normal;
+                }
+                else if (Physics.Raycast(transform.position + Vector3.up * 6, transform.forward, out RaycastHit hit3, 2f, LayerMaskDefaults.Get(LMD.Environment)))
+                {
+                    normal = hit3.normal;
+                }
+
+                if (normal != Vector3.zero)
+                {
+                    Reflect(normal);
+                }
             }
         }
 
@@ -252,6 +275,9 @@ namespace Waffle.Revenant
             Debug.Log($"Reflecting, normal {normal}");
             transform.forward = Vector3.Reflect(transform.forward, normal);
             TargetRotation = transform.rotation;
+
+            //just to prevent it going into the floor again 
+            _currentPredicted = NewMovement.Instance.transform.position;
         }
 
         public void OnCollisionEnter(Collision col)
@@ -558,7 +584,10 @@ namespace Waffle.Revenant
 
             while (Machine.smr.material.GetFloat("_OpacScale") != 0 && !Machine.eid.dead)
             {
-                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 0, Time.deltaTime * 1.5f * SpeedMultiplier));
+                float targetScale = Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 0, Time.deltaTime * 1.5f * SpeedMultiplier);
+                Machine.smr.material.SetFloat("_OpacScale", targetScale);
+                SeasonalHatScaler.transform.localScale = targetScale * Vector3.one;
+                Glow.range = _glowStartRange * targetScale;
                 yield return null;
             }
 
@@ -586,7 +615,10 @@ namespace Waffle.Revenant
             Instantiate(VisibilitySound, transform.position, transform.rotation);
             while (Machine.smr.material.GetFloat("_OpacScale") != 1)
             {
-                Machine.smr.material.SetFloat("_OpacScale", Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 1, Time.deltaTime * 3 * SpeedMultiplier));
+                float targetScale = Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 1, Time.deltaTime * 3 * SpeedMultiplier);
+                Machine.smr.material.SetFloat("_OpacScale", targetScale);
+                SeasonalHatScaler.transform.localScale = targetScale * Vector3.one;
+                Glow.range = _glowStartRange * targetScale;
                 yield return null;
             }
         }

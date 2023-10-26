@@ -2665,7 +2665,7 @@ TrailRenderer:
       m_RotationOrder: 0
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.11764706, g: 0.16078432, b: 0.5686275, a: 1}
+      key0: {r: 0.14509805, g: 0.20784314, b: 0.8117647, a: 1}
       key1: {r: 0.054901965, g: 0.07058824, b: 0.22352943, a: 0}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -2824,7 +2824,7 @@ Light:
   serializedVersion: 10
   m_Type: 2
   m_Shape: 0
-  m_Color: {r: 0, g: 0.0956521, b: 1, a: 1}
+  m_Color: {r: 0.14509805, g: 0.20784314, b: 0.8117647, a: 1}
   m_Intensity: 5
   m_Range: 25
   m_SpotAngle: 30
