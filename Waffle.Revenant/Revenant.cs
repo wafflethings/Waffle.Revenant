@@ -10,9 +10,12 @@ namespace Waffle.Revenant
         static Revenant()
         {
             // i would keep it in this class but rude is janky ;3
-            Debug.LogWarning("Trying to patch, static constructor reached.");
             Patches.Patch();
         }
+
+        [Header("Spawn Animation (feel free to choose this)")]
+        public RevenantSpawn SpawnType = RevenantSpawn.StompFromSky;
+        public GameObject SpawnEffect;
 
         [Header("Materials")]
         public Material DefaultMaterial;
@@ -46,7 +49,6 @@ namespace Waffle.Revenant
         public GameObject VisibilitySound;
 
         [Header("Misc")]
-        public bool UseStompAnimation = true;
         public GameObject ParryFlash;
         public GameObject NoParryFlash;
         public GameObject EnragedEffect;
@@ -63,12 +65,17 @@ namespace Waffle.Revenant
         private bool _hasStomped = false;
         private Vector3 _currentPredicted;
         private bool _trackPlayer = false;
+        private int _difficulty;
 
         public float SpeedMultiplier
         {
             get
             {
-                return (Machine.eid?.totalSpeedModifier + (Enraged ? 0.5f : 0)) ?? 1;
+                float mult = (Machine.eid?.totalSpeedModifier) ?? 1;
+                mult += (_difficulty <= 1 ? -0.15f : 0);
+                mult += (_difficulty >= 4 ? 0.15f : 0);
+                mult += (Enraged ? 0.5f : 0);
+                return mult;
             }
         }
 
@@ -91,21 +98,38 @@ namespace Waffle.Revenant
                 Debug.LogError("The Revenant Machine component should be off by default.");
             }
 
-            if (UseStompAnimation)
+            if (SpawnType == RevenantSpawn.StompFromSky)
             {
                 Machine.anim.SetBool("Stomp First Frame", true);
             }
             else
             {
+                if (SpawnType == RevenantSpawn.AppearFromInvisibility)
+                {
+                    StartCoroutine(GoVisible());
+                }
+
+                if (SpawnType == RevenantSpawn.Standard)
+                {
+                    SpawnEffect.SetActive(true);
+                }
+
                 Machine.enabled = true;
+            }
+
+            if (Machine.GetComponent<EnemyIdentifier>().difficultyOverride >= 0)
+            {
+                _difficulty = Machine.GetComponent<EnemyIdentifier>().difficultyOverride;
+            }
+            else
+            {
+                _difficulty = PrefsManager.Instance.GetInt("difficulty", 0);
             }
         }
 
         // called by some sendmessage, thanks hakito
         public void UpdateBuff()
         {
-            Debug.Log("Revenant update buff!!");
-
             int newDamage = (int)(SwingDamage * (Machine.eid?.totalDamageModifier ?? 1f));
             HeadSwing.damage = newDamage;
             LeftArmSwing.damage = newDamage;
@@ -121,8 +145,18 @@ namespace Waffle.Revenant
                 return;
             }
 
-            if (UseStompAnimation && !_hasStomped)
+            if (SpawnType == RevenantSpawn.StompFromSky && !_hasStomped)
             {
+                return;
+            }
+
+            if (ULTRAKILL.Cheats.BlindEnemies.Blind)
+            {
+                if (RevState != null)
+                {
+                    RevState.End();
+                }
+
                 return;
             }
 
@@ -141,11 +175,6 @@ namespace Waffle.Revenant
             }
 
             if (RevState.GetType() == typeof(RandomMeleeState) && (RevState as RandomMeleeState).AttackDone)
-            {
-                shouldRotate = false;
-            }
-
-            if (ForwardBoost < 3.5f)
             {
                 shouldRotate = false;
             }
@@ -210,8 +239,19 @@ namespace Waffle.Revenant
             }
 
             Vector3 projectileSpawnPos = (LeftYTracker.transform.position + RightYTracker.transform.position) / 2;
-            //projectileSpawnPos.x = transform.position.x;
             ProjectileSpawn.transform.position = projectileSpawnPos + (ProjectileSpawn.transform.forward * 5);
+
+            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 2f, LayerMaskDefaults.Get(LMD.Environment)) && ForwardBoost > 0)
+            {
+                Reflect(hit.normal);
+            }
+        }
+
+        public void Reflect(Vector3 normal)
+        {
+            Debug.Log($"Reflecting, normal {normal}");
+            transform.forward = Vector3.Reflect(transform.forward, normal);
+            TargetRotation = transform.rotation;
         }
 
         public void OnCollisionEnter(Collision col)
@@ -225,7 +265,7 @@ namespace Waffle.Revenant
                     if (Physics.Raycast(transform.position, filteredContacts[0].point - transform.position, out RaycastHit hit, 100, LayerMaskDefaults.Get(LMD.Environment)))
                     {
                         Debug.Log("reflect from col");
-                        rms.Reflect(hit.normal);
+                        Reflect(hit.normal);
                     }
 
                     Debug.Log("Hit the " + filteredContacts[0].otherCollider.gameObject);
@@ -319,7 +359,7 @@ namespace Waffle.Revenant
             {
                 if (Vector3.Distance(transform.position, position) <= pointOffset && !hasDone)
                 {
-                    if (doSplatterDamage)
+                    if (doSplatterDamage && !Enraged)
                     {
                         if (Physics.Raycast(transform.position, position - transform.position, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment)))
                         {
@@ -327,24 +367,20 @@ namespace Waffle.Revenant
 
                             if (hit.collider.tag == "Floor")
                             {
-                                Debug.Log("found floor");
                                 Machine.anim.SetTrigger("Splat Floor");
                             }
                             else
                             {
-                                Debug.Log("else wall");
                                 Machine.anim.SetTrigger("Splat Wall");
                             }
                         }
                         else
                         {
-                            Debug.Log("backup");
                             Machine.anim.SetTrigger("Splat Wall");
                         }
                     }
                     else
                     {
-                        Debug.LogWarning("reached stompland / resetrot");
                         ResetRotation = true;
                         Machine.anim.SetTrigger("Stomp Land");
                     }
@@ -402,9 +438,11 @@ namespace Waffle.Revenant
 
         public IEnumerator DeenrageAfterTime()
         {
-            for (int i = 0; i < 30; i++)
+            int seconds = (_difficulty + 1) * 3;
+
+            for (int i = 0; i < seconds * 2; i++)
             {
-                if (Random.value > 0.75f)
+                if (Random.value > 0.5f && !Machine.eid.dead)
                 {
                     JumpscareCanvas.Instance.FlashImage(this);
                 }
@@ -416,7 +454,6 @@ namespace Waffle.Revenant
 
         public void OnHurt(string origin)
         {
-            Debug.Log("hit by " + origin);
             if (Machine.eid.hitter == "coin" || origin.Contains("Coin.ReflectRevolver")) //this sucks but i cbf to write a transpiler so fuck you
             {
                 Enrage();
@@ -439,7 +476,7 @@ namespace Waffle.Revenant
 
             if (RevState.GetState(out StompState ss) && ss.ShouldCombo)
             {
-                if (Random.value < 0.75)
+                if (Random.value < 0.5)
                 {
                     RevState = new RandomMeleeState(this, true);
                 } 
@@ -458,7 +495,14 @@ namespace Waffle.Revenant
                 }
                 else
                 {
-                    CheckForStomp();
+                    if (Random.value < 0.8)
+                    {
+                        CheckForStomp();
+                    } 
+                    else
+                    {
+                        RevState = new ProjectileAttackState(this);
+                    }
                 }
 
                 return;
@@ -482,27 +526,8 @@ namespace Waffle.Revenant
 
         public void CheckForStomp()
         {
-            bool didHit = Physics.Raycast(transform.position, Vector3.up, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment));
-
-            bool shouldStomp;
-            if (didHit && hit.distance > 10)
-            {
-                shouldStomp = Physics.CheckSphere(hit.point, 3);
-            }
-            else
-            {
-                shouldStomp = true;
-            }
-
-            if (shouldStomp)
-            {
-                Debug.Log("stomping with distance " + hit.distance);
-                RevState = new StompState(this, hit.distance);
-            }
-            else
-            {
-                RevState = new RandomMeleeState(this);
-            }
+            bool didHit = Physics.Raycast(NewMovement.Instance.transform.position, Vector3.up, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment));
+            RevState = new StompState(this, didHit ? hit.point : NewMovement.Instance.transform.position + Vector3.up * 25);
         }
 
         // called by Machine.GoLimp with a SendMessage, thanks Hakita
@@ -719,18 +744,22 @@ namespace Waffle.Revenant
 
         public IEnumerator RangedAttack()
         {
+            _trackPlayer = true;
             LookAtPlayer = true;
             yield return StartCoroutine(GoVisible());
             Machine.anim.SetTrigger("Range Attack");
             GameObject decoProjectile = Instantiate(ProjectileDecorative, ProjectileSpawn.transform);
             StartCoroutine(PrepareDecoProjectile(decoProjectile));
             yield return new WaitForSeconds(_frameTime * 25); //51 frames
+            _trackPlayer = false;
 
+            InstantLookAtPlayer();
             Destroy(decoProjectile);
             GameObject realProjectile = Instantiate(Projectile, ProjectileSpawn.transform.position, ProjectileSpawn.transform.rotation);
+            realProjectile.transform.LookAt(CameraController.Instance.transform);
             Projectile projectile = realProjectile.GetComponent<Projectile>();
             projectile.target = NewMovement.Instance.transform;
-            projectile.speed = 5f * Machine.eid.totalSpeedModifier;
+            projectile.speed = 60f * SpeedMultiplier;
 
             foreach (Projectile subProj in realProjectile.GetComponentsInChildren<Projectile>())
             {
@@ -750,16 +779,16 @@ namespace Waffle.Revenant
 
         public IEnumerator PrepareDecoProjectile(GameObject projectile)
         {
-            //24 x 3 is 72. takes 3 seconds to prepare
+            //24 x 3 is 72. takes 1.5f seconds to prepare as it is sped up 2x
             float timeElapsed = 0;
             AudioSource source = projectile.GetComponent<AudioSource>();
             float startVol = source.volume;
             Vector3 startScale = projectile.transform.localScale;
             
-            while (timeElapsed < 3)
+            while (timeElapsed < 1.5f && projectile != null)
             {
-                source.volume = startVol * (timeElapsed / 3);
-                projectile.transform.localScale = startScale * (timeElapsed / 3);
+                source.volume = startVol * (timeElapsed / 1.5f);
+                projectile.transform.localScale = startScale * (timeElapsed / 1.5f);
                 timeElapsed += Time.deltaTime * SpeedMultiplier;
                 yield return null;
             }
@@ -799,5 +828,12 @@ namespace Waffle.Revenant
                 rb.useGravity = true;
             }
         }
+    }
+
+    public enum RevenantSpawn
+    {
+        StompFromSky,
+        AppearFromInvisibility,
+        Standard
     }
 }

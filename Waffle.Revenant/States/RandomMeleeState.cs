@@ -6,7 +6,6 @@ namespace Waffle.Revenant.States
     public class RandomMeleeState : PassiveState
     {
         public bool AttackDone = false;
-        public bool Bounced = false;
         private Coroutine _currentAttack;
         private bool _fromCombo;
 
@@ -48,10 +47,18 @@ namespace Waffle.Revenant.States
                         break;
                 }
 
-                Revenant.transform.position = NewMovement.Instance.transform.position + addedDirection;
+                if (Physics.Raycast(NewMovement.Instance.transform.position, addedDirection, out RaycastHit hit, mult))
+                {
+                    Revenant.transform.position = hit.point;
+                }
+                else
+                {
+                    Revenant.transform.position = NewMovement.Instance.transform.position + addedDirection;
+                }
             }
 
             Revenant.InstantLookAtPlayer();
+            Revenant.transform.position += Revenant.transform.forward * 2;
             IEnumerator chosenAttack = null;
 
             switch (Random.Range(0, 3))
@@ -89,20 +96,6 @@ namespace Waffle.Revenant.States
             {
                 base.Update();
             }
-
-            if (Physics.Raycast(Revenant.transform.position, Revenant.transform.forward, out RaycastHit hit, 2f, LayerMaskDefaults.Get(LMD.Environment)) && Revenant.ForwardBoost > 0)
-            {
-                Reflect(hit.normal);
-            }
-        }
-
-        public void Reflect(Vector3 normal)
-        {
-            Debug.Log($"Reflecting, normal {normal}");
-            Revenant.transform.forward = Vector3.Reflect(Revenant.transform.forward, normal);
-            //Revenant.transform.rotation *= Quaternion.Euler(-Revenant.transform.up * -22.5f);
-            Revenant.TargetRotation = Revenant.transform.rotation;
-            ((RandomMeleeState)Revenant.RevState).Bounced = true;
         }
     }
 }

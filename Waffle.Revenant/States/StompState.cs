@@ -9,17 +9,12 @@ namespace Waffle.Revenant.States
         public bool Bounced = false;
         public bool ShouldCombo = false;
         private Coroutine _currentAttack;
-        private float _height;
+        private Vector3 _startPos;
         private float _startAnimSpeed;
 
-        public StompState(Revenant revenant, float height) : base(revenant)
+        public StompState(Revenant revenant, Vector3 startPos) : base(revenant)
         {
-            _height = height;
-
-            if (_height == 0)
-            {
-                _height = 25;
-            }
+            _startPos = startPos;
         }
 
         public override void Begin()
@@ -51,7 +46,13 @@ namespace Waffle.Revenant.States
                     break;
             }
 
-            Revenant.transform.position = NewMovement.Instance.transform.position + addedDirection + Vector3.up * _height;
+            if (Physics.Raycast(Revenant.transform.position, addedDirection, mult, LayerMaskDefaults.Get(LMD.Environment)))
+            {
+                //if it's in a wall, it will only go to the directly above the player (which is already checked to be good in CheckForStomp)
+                addedDirection = Vector3.zero;
+            }
+
+            Revenant.transform.position = _startPos + addedDirection - Vector3.up * 5;
 
             Vector3 stompToPosition = NewMovement.Instance.transform.position;
             if (Physics.Raycast(Revenant.transform.position, NewMovement.Instance.transform.position - Revenant.transform.position, out RaycastHit hit, 1000, LayerMaskDefaults.Get(LMD.Environment))) 
@@ -66,16 +67,22 @@ namespace Waffle.Revenant.States
             Revenant.ResetRotation = true;
 
             float rand = Random.value;
-            Debug.Log($"Random value is " + rand);
-            if (rand < 0.75f || Revenant.Enraged)
+            if (!Revenant.Enraged)
             {
-                yield return new WaitForSeconds(0.5f / Revenant.SpeedMultiplier);
-                ShouldCombo = true;
-                Debug.Log("should combo???");
+                if (rand < 0.75f)
+                {
+                    yield return new WaitForSeconds(0.5f / Revenant.SpeedMultiplier);
+                    ShouldCombo = true;
+                }
+                else
+                {
+                    yield return new WaitForSeconds(0.5f / Revenant.SpeedMultiplier);
+                    yield return Revenant.StartCoroutine(Revenant.GoInvisible(0, true));
+                }
             }
             else
             {
-                yield return new WaitForSeconds(1f / Revenant.SpeedMultiplier);
+                ShouldCombo = true;
             }
 
             Revenant.ResetRotation = false;

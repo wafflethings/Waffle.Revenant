@@ -41,7 +41,9 @@ namespace Waffle.Revenant
 
         private IEnumerator FlashImageRoutine(Revenant rev)
         {
-            Image.color = new Color(1, 1, 1, 1);
+            float alpha = Mathf.Clamp((1 - Vector3.Distance(rev.transform.position, NewMovement.Instance.transform.position) / 100), 0.1f, 1);
+
+            Image.color = new Color(1, 1, 1, alpha);
             Image.gameObject.SetActive(true);
             Image.sprite = rev.GetJumpscare();
 
@@ -59,10 +61,9 @@ namespace Waffle.Revenant
             yield return new WaitForSeconds(0.2f);
 
             int rand = UnityEngine.Random.Range(0, 3);
-            Debug.Log("rolled rand " + rand);
-            if (rand == 1)
+
+            if (rand == 1 && !rev.Enraged)
             {
-                Debug.Log("showing");
                 StartCoroutine(FlashImageRoutine(rev));
             }
 

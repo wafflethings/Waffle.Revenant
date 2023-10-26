@@ -37,6 +37,11 @@ namespace Waffle.Revenant.States
 
         public override void Update()
         {
+            if (Physics.Raycast(Revenant.transform.position, (GoingRight ? -1 : 1) * Revenant.transform.right, out RaycastHit hit, 2f, LayerMaskDefaults.Get(LMD.Environment)))
+            {
+                GoingRight = !GoingRight;
+            }
+
             Quaternion quaternion = Quaternion.LookRotation(NewMovement.Instance.transform.position - Revenant.transform.position, Vector3.up);
             Revenant.transform.rotation = Quaternion.RotateTowards(Revenant.transform.rotation, quaternion, Time.deltaTime * (10f * Quaternion.Angle(quaternion, Revenant.transform.rotation) + 2f) * Revenant.SpeedMultiplier);
             Revenant.Machine.rb.MovePosition(Revenant.transform.position + Revenant.transform.right * (GoingRight ? 1 : -1) * 5f * Time.deltaTime * Revenant.SpeedMultiplier);

@@ -19,7 +19,6 @@ namespace Waffle.Revenant.States
 
         public IEnumerator DoStuff()
         {
-            Revenant.InstantLookAtPlayer();
             CurrentAttack = Revenant.StartCoroutine(Revenant.RangedAttack());
             yield return CurrentAttack;
 
