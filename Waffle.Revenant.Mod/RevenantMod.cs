@@ -8,10 +8,10 @@ using UnityEngine;
 
 namespace Waffle.Revenant.Mod
 {
-    [BepInPlugin("waffle.ultrakill.revenant", "Revenant Mod", "1.0.0")]
+    [BepInPlugin("waffle.ultrakill.revenant_mod", "Revenant Mod", "1.0.0")]
     public class RevenantMod : BaseUnityPlugin
     {
-        public static Harmony Harmony = new Harmony("waffle.ultrakill.revenant");
+        public static Harmony Harmony = new Harmony("waffle.ultrakill.revenant_mod");
         public static bool DoneSpawnMenu = false;
         public static bool DoneTerminal = false;
 
@@ -30,7 +30,7 @@ namespace Waffle.Revenant.Mod
             Debug.Log("Loaded Revenant mod successfully!! :3");
         }
 
-        [HarmonyPatch(typeof(NewMovement), nameof(NewMovement.Start)), HarmonyPrefix]
+        [HarmonyPatch(typeof(CameraController), nameof(CameraController.Awake)), HarmonyPrefix]
         public static void CreateAssets()
         {
             Instantiate(RevenantAssets);

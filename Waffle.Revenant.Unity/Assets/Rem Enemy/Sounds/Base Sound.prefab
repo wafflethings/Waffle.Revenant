@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 82815121935545204}
   - component: {fileID: 114010558976646469}
   m_Layer: 0
-  m_Name: Rev Appear
+  m_Name: Base Sound
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43,8 +43,8 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24300002, guid: 822df8dc4092fe2418c2b4ea9a12c446,
     type: 2}
-  m_audioClip: {fileID: 8300000, guid: e998cff3b4180774d96fba76e422b84e, type: 3}
-  m_PlayOnAwake: 1
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
   m_Volume: 0.65
   m_Pitch: 1
   Loop: 0
@@ -54,7 +54,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 100
+  MaxDistance: 150
   Pan2D: 0
   rolloffMode: 1
   BypassEffects: 0
@@ -142,5 +142,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useAudioLength: 0
-  time: 2
+  time: 10
   randomizer: 0

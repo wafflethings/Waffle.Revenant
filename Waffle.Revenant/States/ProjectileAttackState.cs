@@ -7,6 +7,7 @@ namespace Waffle.Revenant.States
     {
         private Coroutine CurrentAttack;
         public bool AttackDone;
+        public GameObject DecoProjectile;
 
         public ProjectileAttackState(Revenant revenant) : base(revenant)
         {
@@ -28,6 +29,7 @@ namespace Waffle.Revenant.States
         public override void End()
         {
             Revenant.StopCoroutine(CurrentAttack);
+            Object.Destroy(DecoProjectile);
             base.End();
         }
 

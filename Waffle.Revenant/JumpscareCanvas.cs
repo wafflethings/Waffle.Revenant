@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +30,42 @@ namespace Waffle.Revenant
         public Vector2 PitchRange;
         private Coroutine _lastFlash;
 
+        public static Material Noise
+        {
+            get
+            {
+                if (_noise == null)
+                {
+                    CreateNoiseMaker();
+                }
+
+                return _noise;
+            }
+        }
+
+        private static Material _noise;
+
+        public static void CreateNoiseMaker()  // thanks hydra :3
+        {
+            Camera virtualCamera = CameraController.Instance.transform.GetComponentsInChildren<Camera>(true).Where(x => x.name == "Virtual Camera").FirstOrDefault();
+
+            if (virtualCamera == null)
+            {
+                Debug.LogError("No virtual cam!");
+                return;
+            }
+
+            MeshRenderer virtualQuad = virtualCamera.GetComponentInChildren<MeshRenderer>(true);
+
+            GameObject quadCopy = GameObject.Instantiate(virtualQuad.gameObject, virtualCamera.transform);
+            quadCopy.transform.localScale = virtualQuad.transform.localScale;
+            quadCopy.transform.localRotation = virtualQuad.transform.localRotation;
+            quadCopy.transform.localPosition = virtualQuad.transform.localPosition + new Vector3(0, 0, -0.015f);
+            MeshRenderer quadCopyRenderer = quadCopy.GetComponent<MeshRenderer>();
+            quadCopyRenderer.material = RevenantAssets.Instance.NoiseMaterial;
+            _noise = quadCopyRenderer.material;
+        }
+
         public void FlashImage(Revenant rev)
         {
             if (rev.JumpscaresEnabled)
@@ -46,6 +83,7 @@ namespace Waffle.Revenant
         {
             float alpha = Mathf.Clamp((1 - Vector3.Distance(rev.transform.position, NewMovement.Instance.transform.position) / 100), 0.1f, 1);
 
+            Noise.SetFloat("_Alpha", UnityEngine.Random.Range(0.25f, 0.5f));
             Image.color = new Color(1, 1, 1, alpha);
             Image.gameObject.SetActive(true);
             Image.sprite = rev.GetJumpscare();
@@ -72,6 +110,7 @@ namespace Waffle.Revenant
 
             yield return new WaitForSeconds(0.05f);
 
+            Noise.SetFloat("_Alpha", 0);
             Image.gameObject.SetActive(false);
             GlitchSound.Stop();
         }

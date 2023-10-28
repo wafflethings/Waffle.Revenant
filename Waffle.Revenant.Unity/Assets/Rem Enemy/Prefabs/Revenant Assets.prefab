@@ -45,3 +45,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TemplateJumpscareCanvas: {fileID: 83029022435540319, guid: 772835053cfec974bbe04ea6eb7e2d4a,
     type: 3}
+  NoiseMaterial: {fileID: 2100000, guid: a5923b4b17d6a2742806bcf166d37849, type: 2}

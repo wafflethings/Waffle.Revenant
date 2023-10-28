@@ -26,7 +26,6 @@ namespace Waffle.Revenant.States
 
         public override void End()
         {
-            Debug.Log($"rev: {Revenant}, mac: {Revenant.Machine}, anim: {Revenant.Machine.anim}");
             Revenant.Machine.anim.SetBool("Float Left", false);
             Revenant.Machine.anim.SetBool("Float Right", false);
 

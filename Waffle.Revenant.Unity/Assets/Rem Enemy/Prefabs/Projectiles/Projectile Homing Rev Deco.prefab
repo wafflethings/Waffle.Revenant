@@ -77,6 +77,16 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 85a19115b3261d14b9f8b0fd371b14f3, type: 2}
+    - target: {fileID: 82194629858428106, guid: dab1b967764275b40b524e85aba0bb7c,
+        type: 3}
+      propertyPath: m_audioClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 308befa35480cd94d8e93ddc3522a421, type: 3}
+    - target: {fileID: 82194629858428106, guid: dab1b967764275b40b524e85aba0bb7c,
+        type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 114702360556261663, guid: dab1b967764275b40b524e85aba0bb7c,
         type: 3}
       propertyPath: m_Enabled

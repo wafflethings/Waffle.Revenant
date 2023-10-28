@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -10,8 +11,11 @@ namespace Waffle.Revenant
     {
         public static void Patch()
         {
-            Debug.LogWarning("Trying to patch, patch code run.");
-            new Harmony("waffle.ultrakill.revenant").PatchAll(typeof(Patches));
+            if (!Harmony.HasAnyPatches("waffle.ultrakill.revenant"))
+            {
+                Debug.LogWarning("Trying to patch, patch code run.");
+                new Harmony("waffle.ultrakill.revenant").PatchAll(typeof(Patches));
+            }
         }
 
         [HarmonyPatch(typeof(EnemyIdentifier), nameof(EnemyIdentifier.DeliverDamage)), HarmonyPostfix]

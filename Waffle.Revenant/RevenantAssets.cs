@@ -23,6 +23,7 @@ namespace Waffle.Revenant
         private static RevenantAssets _instance;
 
         public GameObject TemplateJumpscareCanvas;
+        public Material NoiseMaterial;
 
         public void Start()
         {

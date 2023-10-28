@@ -54,7 +54,7 @@ MonoBehaviour:
   iconKey: 
   gridIcon: {fileID: 21300000, guid: e462b393e7c2ef7499a6d8628c456f76, type: 3}
   backgroundColor: {r: 0.8980392, g: 0.65882355, b: 0.65882355, a: 1}
-  enemyType: 5
+  enemyType: 3
   spawnableType: 0
   armOffset: {x: 0, y: 0, z: 0}
   armRotationOffset: {x: 0, y: 0, z: 0}

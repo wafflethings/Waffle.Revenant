@@ -11,7 +11,7 @@ namespace Waffle.Revenant.States
         private Coroutine _currentAttack;
         private Vector3 _startPos;
         private float _startAnimSpeed;
-
+        private AudioSource _whooshSource;
         public StompState(Revenant revenant, Vector3 startPos) : base(revenant)
         {
             _startPos = startPos;
@@ -61,7 +61,10 @@ namespace Waffle.Revenant.States
             }
 
             _startAnimSpeed = Revenant.Machine.anim.speed;
-            _currentAttack = Revenant.StartCoroutine(Revenant.StompAttack(stompToPosition));
+            Revenant.CreateSoundClip(Revenant.StompSound, out _whooshSource, false, true);
+            _whooshSource.pitch = 1.25f;
+            _whooshSource.volume /= 1.5f;
+            _currentAttack = Revenant.StartCoroutine(Revenant.StompAttack(stompToPosition, _whooshSource));
             yield return _currentAttack;
 
             Revenant.ResetRotation = true;
@@ -113,6 +116,7 @@ namespace Waffle.Revenant.States
 
             yield return Revenant.StartCoroutine(Revenant.StompFall(pos, 1, false, true, didHit));
 
+            _whooshSource.Stop();
             if (didHit)
             {
                 Revenant.Machine.eid.hitter = "punch";
@@ -130,6 +134,7 @@ namespace Waffle.Revenant.States
 
         public override void End()
         {
+            _whooshSource.Stop();
             Revenant.StopCoroutine(_currentAttack);
             base.End();
         }

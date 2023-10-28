@@ -45,16 +45,23 @@ namespace Waffle.Revenant
         public GameObject Hole;
 
         [Header("Sound Effects")]
-        public GameObject[] SwingAttackSounds;
-        public GameObject ProjectileSound;
-        public GameObject VisibilitySound;
+        public GameObject BaseSoundBubble;
+        public AudioClip[] SwingAttackSounds;
+        public AudioClip VisibilitySound;
+        public AudioClip InvisibilitySound;
+        public AudioClip StompSound;
+
+        [Header("Lighting")]
+        public Light Glow;
+        public Color DefaultColour;
+        public Color RageColour;
 
         [Header("Misc")]
         public GameObject ParryFlash;
         public GameObject NoParryFlash;
         public GameObject EnragedEffect;
+        public GameObject DeathEffect;
         public GameObject SeasonalHatScaler;
-        public Light Glow;
         private float _glowStartRange;
 
         public static float DownOffsetMultiplier = 2.5f;
@@ -290,11 +297,8 @@ namespace Waffle.Revenant
                 {
                     if (Physics.Raycast(transform.position, filteredContacts[0].point - transform.position, out RaycastHit hit, 100, LayerMaskDefaults.Get(LMD.Environment)))
                     {
-                        Debug.Log("reflect from col");
                         Reflect(hit.normal);
                     }
-
-                    Debug.Log("Hit the " + filteredContacts[0].otherCollider.gameObject);
                 }
             }
         }
@@ -307,14 +311,14 @@ namespace Waffle.Revenant
             }
         }
 
-        public IEnumerator StompAttack(Vector3 position)
+        public IEnumerator StompAttack(Vector3 position, AudioSource source)
         {
             yield return StartCoroutine(GoVisible());
             Machine.anim.SetBool("Stomp First Frame", true);
             yield return new WaitForSeconds(0.1f);
             CreateParryFlash(ParryFlash);
             Machine.parryable = true;
-            yield return StompFall(position, 2, true);
+            yield return StompFall(position, 2, true, false, false, source);
             Machine.parryable = false;
             Instantiate(ShockwaveAttack, transform.position, Quaternion.identity);
         }
@@ -324,13 +328,15 @@ namespace Waffle.Revenant
             Machine.enabled = true;
             yield return null; // have to wait a frame so Start has the time to get called, this code is aids :3
 
-            yield return StompFall(position);
+            CreateSoundClip(StompSound, out AudioSource source, false, true);
+            yield return StompFall(position, 1, false, false, false, source);
+            source.Stop();
             Instantiate(ShockwaveIntro, transform.position, Quaternion.identity);
 
             _hasStomped = true;
         }
 
-        public IEnumerator StompFall(Vector3 position, float speedMultiplier = 1, bool lockAtPlayer = false, bool doSplatter = false, bool doSplatterDamage = false)
+        public IEnumerator StompFall(Vector3 position, float speedMultiplier = 1, bool lockAtPlayer = false, bool doSplatter = false, bool doSplatterDamage = false, AudioSource source = null)
         {
             speedMultiplier *= SpeedMultiplier;
 
@@ -379,7 +385,7 @@ namespace Waffle.Revenant
             }
             Machine.anim.speed = SpeedMultiplier;
 
-
+            source?.Play();
             bool hasDone = false;
             do
             {
@@ -420,6 +426,7 @@ namespace Waffle.Revenant
                 yield return null;
             } 
             while (transform.position != position);
+            source?.Stop();
         }
 
         public void InstantLookAtPlayer()
@@ -444,6 +451,7 @@ namespace Waffle.Revenant
                 CurrentEnragedEffect.transform.parent = Machine.chest.transform;
                 CurrentEnragedEffect.transform.localPosition = Vector3.zero;
                 CurrentEnragedEffect.transform.localRotation = Quaternion.identity;
+                Glow.color = RageColour;
                 Enraged = true;
 
                 UpdateBuff();
@@ -458,6 +466,7 @@ namespace Waffle.Revenant
             float oldMaterial = Machine.smr.material.GetFloat("_OpacScale");
             Machine.smr.material = new(DefaultMaterial);
             Machine.smr.material.SetFloat("_OpacScale", oldMaterial);
+            Glow.color = DefaultColour;
 
             UpdateBuff();
         }
@@ -559,6 +568,11 @@ namespace Waffle.Revenant
         // called by Machine.GoLimp with a SendMessage, thanks Hakita
         public void Death()
         {
+            GameObject deathEffect = Instantiate(DeathEffect);
+            deathEffect.transform.parent = Machine.chest.transform;
+            deathEffect.transform.localPosition = Vector3.zero;
+            deathEffect.transform.localRotation = Quaternion.identity;
+
             ResetXRotation();
             StartCoroutine(DeathAnimation());
             Machine.anim.StopPlayback();
@@ -575,6 +589,9 @@ namespace Waffle.Revenant
         public IEnumerator GoInvisible(float timeToWait = 0, bool invisAnimation = false)
         {
             yield return new WaitForSeconds(timeToWait);
+
+            CreateSoundClip(InvisibilitySound, out AudioSource sound);
+            sound.pitch = Random.Range(0.75f, 1.25f);
 
             if (invisAnimation)
             {
@@ -612,7 +629,9 @@ namespace Waffle.Revenant
 
         public IEnumerator GoVisible()
         {
-            Instantiate(VisibilitySound, transform.position, transform.rotation);
+            CreateSoundClip(VisibilitySound, out AudioSource sound);
+            sound.pitch = Random.Range(0.75f, 1.25f);
+
             while (Machine.smr.material.GetFloat("_OpacScale") != 1)
             {
                 float targetScale = Mathf.MoveTowards(Machine.smr.material.GetFloat("_OpacScale"), 1, Time.deltaTime * 3 * SpeedMultiplier);
@@ -650,6 +669,7 @@ namespace Waffle.Revenant
             {
                 HeadSwing.DamageStart();
             }
+            CreateRandomSwing();
 
             yield return new WaitForSeconds(_frameTime * 17);
             _trackPlayer = false;
@@ -687,6 +707,7 @@ namespace Waffle.Revenant
             _currentPredicted = PlayerTracker.Instance.PredictPlayerPosition(0.5f);
             ForwardBoost = 60f;
             LeftArmSwing.DamageStart();
+            CreateRandomSwing();
 
             yield return new WaitForSeconds(_frameTime * 5); // totals to 10 frames
             //LookAtPlayer = false;
@@ -707,6 +728,7 @@ namespace Waffle.Revenant
             {
                 RightArmSwing.DamageStart();
             }
+            CreateRandomSwing();
 
             yield return new WaitForSeconds(_frameTime * 3); // totals to 34 frames
             //LookAtPlayer = false;
@@ -748,6 +770,7 @@ namespace Waffle.Revenant
             ForwardBoost = 60f;
             LeftArmSwing.DamageStart();
             RightArmSwing.DamageStart();
+            CreateRandomSwing();
 
             yield return new WaitForSeconds(_frameTime * 5); // totals to 12 frames
 
@@ -769,6 +792,26 @@ namespace Waffle.Revenant
             ((RandomMeleeState)RevState).AttackDone = false;
         }
 
+        public void CreateSoundClip(AudioClip clip, out AudioSource source, bool shouldPlay = true, bool loop = false)
+        {
+            GameObject sound = Instantiate(BaseSoundBubble, transform);
+            source = sound.GetComponent<AudioSource>();
+            source.loop = loop;
+            source.clip = clip;
+            sound.name = $"Sound Player: {clip.name}";
+
+            if (shouldPlay)
+            {
+                source.Play();
+            }
+        }
+
+        public void CreateRandomSwing()
+        {
+            CreateSoundClip(SwingAttackSounds[Random.Range(0, SwingAttackSounds.Length - 1)], out AudioSource source);
+            source.pitch = Random.Range(0.5f, 1.5f);
+        }
+
         public IEnumerator Stomp()
         {
             yield return StartCoroutine(GoVisible());
@@ -781,6 +824,10 @@ namespace Waffle.Revenant
             yield return StartCoroutine(GoVisible());
             Machine.anim.SetTrigger("Range Attack");
             GameObject decoProjectile = Instantiate(ProjectileDecorative, ProjectileSpawn.transform);
+            if (RevState.GetState(out ProjectileAttackState pas))
+            {
+                pas.DecoProjectile = decoProjectile;
+            }
             StartCoroutine(PrepareDecoProjectile(decoProjectile));
             yield return new WaitForSeconds(_frameTime * 25); //51 frames
             _trackPlayer = false;
@@ -834,7 +881,7 @@ namespace Waffle.Revenant
         // sendmessage in machine
         public void GotParried()
         {
-            if (RevState.GetState(out StompState st) && !st.AttackDone)
+            if (RevState.GetState(out StompState st) && !st.AttackDone && !Machine.eid.dead)
             {
                 StartCoroutine(st.StartSpirallingAndSet());
             }
