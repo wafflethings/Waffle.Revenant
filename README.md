@@ -8,5 +8,6 @@ A custom enemy for ULTRAKILL, made by me, Rem, and Hydra.
 [![](https://github.com/wafflethings/Waffle.Revenant/assets/60797216/731c3ff4-fde0-4d69-8b39-3e6e52925794)](https://twitter.com/Hydraxous/ "")
 ---
 [![](https://github.com/wafflethings/Waffle.Revenant/assets/60797216/9f83d52f-9980-4830-b6a3-a5bc2f95d2b5)](https://youtu.be/OnO7xvWB15Y "")
+[![](https://github.com/wafflethings/Waffle.Revenant/assets/60797216/aba76d91-7345-4c14-9072-c47a9f60e6eb)](https://www.youtube.com/watch?v=xZwAqcYnRR0 "")
 ---
 ![image](https://github.com/wafflethings/Waffle.Revenant/assets/60797216/f391357c-8fe3-49d9-adc5-507b87486a61)
