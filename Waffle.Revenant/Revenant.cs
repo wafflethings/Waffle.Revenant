@@ -19,6 +19,7 @@ namespace Waffle.Revenant
 
         [Header("Jumpscares")]
         public bool JumpscaresEnabled = true;
+        public bool JumpscareImages = false;
         public Sprite[] JumpscarePool;
         public Sprite[] EnragedJumpscarePool;
 
@@ -219,7 +220,7 @@ namespace Waffle.Revenant
                     TargetRotation = Quaternion.Euler(oldRotVec);
                 }
 
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Time.deltaTime * 180);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Time.deltaTime * 240);
             }
 
             if (ForwardBoost != 0)
@@ -644,7 +645,7 @@ namespace Waffle.Revenant
 
         public Sprite GetJumpscare()
         {
-            return Enraged ? EnragedJumpscarePool[Random.Range(0, EnragedJumpscarePool.Length - 1)] : JumpscarePool[Random.Range(0, JumpscarePool.Length - 1)];
+            return Enraged ? EnragedJumpscarePool[Random.Range(0, EnragedJumpscarePool.Length)] : JumpscarePool[Random.Range(0, JumpscarePool.Length)];
         }
 
         public IEnumerator Melee1(bool goVisible = true)
@@ -837,7 +838,7 @@ namespace Waffle.Revenant
             GameObject realProjectile = Instantiate(Projectile, ProjectileSpawn.transform.position, ProjectileSpawn.transform.rotation);
             realProjectile.transform.LookAt(CameraController.Instance.transform);
             Projectile projectile = realProjectile.GetComponent<Projectile>();
-            projectile.target = NewMovement.Instance.transform;
+            projectile.target = Machine.eid.target;
             projectile.speed = 60f * SpeedMultiplier;
 
             foreach (Projectile subProj in realProjectile.GetComponentsInChildren<Projectile>())

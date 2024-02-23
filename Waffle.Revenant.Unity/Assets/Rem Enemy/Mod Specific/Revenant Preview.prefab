@@ -72,7 +72,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3099594626582032228}
-  - component: {fileID: 6275614900638820745}
   m_Layer: 13
   m_Name: HandR Swing
   m_TagString: Untagged
@@ -94,32 +93,6 @@ Transform:
   m_Father: {fileID: 7586690663108442531}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6275614900638820745
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2897979280675249997}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b86f5d832341fe44d82c903c293e3e82, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 5
-  playerOnly: 0
-  playerBeenHit: 0
-  damage: 0
-  enemyDamage: 0
-  knockBackForce: 0
-  knockBackDirectionOverride: 0
-  knockBackDirection: {x: 0, y: 0, z: 0}
-  strong: 1
-  additionalColliders: []
-  useRaycastCheck: 1
-  ignoreSlidingPlayer: 0
-  startActive: 0
-  interpolateBetweenFrames: 0
 --- !u!1 &4256813507559459275
 GameObject:
   m_ObjectHideFlags: 0
@@ -261,7 +234,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3242956492182999471}
-  - component: {fileID: 4966477668454228880}
   m_Layer: 13
   m_Name: Head SwingCheck
   m_TagString: Untagged
@@ -283,32 +255,6 @@ Transform:
   m_Father: {fileID: 1795050682924797773}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4966477668454228880
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8938038487899942965}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b86f5d832341fe44d82c903c293e3e82, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 5
-  playerOnly: 0
-  playerBeenHit: 0
-  damage: 0
-  enemyDamage: 0
-  knockBackForce: 0
-  knockBackDirectionOverride: 0
-  knockBackDirection: {x: 0, y: 0, z: 0}
-  strong: 1
-  additionalColliders: []
-  useRaycastCheck: 1
-  ignoreSlidingPlayer: 0
-  startActive: 0
-  interpolateBetweenFrames: 0
 --- !u!1001 &7136507148345555916
 PrefabInstance:
   m_ObjectHideFlags: 0

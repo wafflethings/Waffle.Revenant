@@ -26,6 +26,9 @@ namespace Waffle.Revenant
         private static JumpscareCanvas _instance;
 
         public Image Image;
+        public Image Crt;
+        public GameObject Tendrils;
+        public Image[] TendrilImages;
         public AudioSource GlitchSound;
         public Vector2 PitchRange;
         private Coroutine _lastFlash;
@@ -66,6 +69,12 @@ namespace Waffle.Revenant
             _noise = quadCopyRenderer.material;
         }
 
+        private void Start()
+        {
+            Image.gameObject.SetActive(false);
+            Tendrils.gameObject.SetActive(false);
+        }
+
         public void FlashImage(Revenant rev)
         {
             if (rev.JumpscaresEnabled)
@@ -84,26 +93,52 @@ namespace Waffle.Revenant
             float alpha = Mathf.Clamp((1 - Vector3.Distance(rev.transform.position, NewMovement.Instance.transform.position) / 100), 0.1f, 1);
 
             Noise.SetFloat("_Alpha", UnityEngine.Random.Range(0.25f, 0.5f));
-            Image.color = new Color(1, 1, 1, alpha);
+
             Image.gameObject.SetActive(true);
-            Image.sprite = rev.GetJumpscare();
+            if (rev.JumpscareImages)
+            {
+                Image.sprite = rev.GetJumpscare();
+                Image.color = new Color(1, 1, 1, alpha);
+            }
+            else
+            {
+                Image.color = new Color(1, 1, 1, 0);
+                TendrilImages[0].color = new Color(1, 1, 1, alpha);
+                TendrilImages[1].color = new Color(1, 1, 1, alpha);
+                Tendrils.SetActive(true);
+            }
 
             GlitchSound.pitch = UnityEngine.Random.Range(PitchRange.x, PitchRange.y);
             GlitchSound.Play();
-
-            /*
-            while (Image.color.a != 0)
+            
+            if (!rev.JumpscareImages)
             {
-                Image.color = new Color(1, 1, 1, Mathf.MoveTowards(Image.color.a, 0, Time.deltaTime * 5));
-                yield return null;
+                yield return new WaitForSeconds(0.2f);
+                
+                float startNoiseAlpha = Noise.GetFloat("_Alpha");
+                float startTendrilAlpha = TendrilImages[0].color.a;
+                float startCrtAlpha = Crt.color.a;
+                float startVolume = GlitchSound.volume;
+                
+                while (TendrilImages[0].color.a != 0)
+                {
+                    TendrilImages[0].color = new(1, 1, 1, Mathf.MoveTowards(TendrilImages[0].color.a, 0, Time.deltaTime * 2));
+                    TendrilImages[1].color = TendrilImages[0].color;
+                    
+                    float percentageDone = TendrilImages[0].color.a / startTendrilAlpha;
+                    Noise.SetFloat("_Alpha", startNoiseAlpha * percentageDone);
+                    Crt.color = new(1, 1, 1, startCrtAlpha * percentageDone);
+                    GlitchSound.volume = startVolume * percentageDone;
+                    yield return null;
+                }
             }
-            */
+
 
             yield return new WaitForSeconds(0.2f);
 
             int rand = UnityEngine.Random.Range(0, 3);
 
-            if (rand == 1 && !rev.Enraged)
+            if (rand == 1 && !rev.Enraged && rev.JumpscareImages)
             {
                 StartCoroutine(FlashImageRoutine(rev));
             }
@@ -112,6 +147,7 @@ namespace Waffle.Revenant
 
             Noise.SetFloat("_Alpha", 0);
             Image.gameObject.SetActive(false);
+            Tendrils.SetActive(false);
             GlitchSound.Stop();
         }
     }

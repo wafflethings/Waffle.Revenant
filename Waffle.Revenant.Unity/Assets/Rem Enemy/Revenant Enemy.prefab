@@ -160,7 +160,7 @@ MonoBehaviour:
   damageBuff: 0
   damageBuffModifier: 1.5
   buffUnaffectedRenderers: []
-  overrideFullName: 
+  overrideFullName: REVENANT
 --- !u!54 &54663947636052434
 Rigidbody:
   m_ObjectHideFlags: 0

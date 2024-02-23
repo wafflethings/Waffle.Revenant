@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+.idea/.idea.Waffle.Revenant/.idea/vcs.xml
+.idea/.idea.Waffle.Revenant/.idea/indexLayout.xml
+.idea/.idea.Waffle.Revenant/.idea/encodings.xml
+.idea/.idea.Waffle.Revenant/.idea/discord.xml
