@@ -1,5 +1,5 @@
 # Revenant
-A custom enemy for ULTRAKILL, made by me, Rem, and Hydra.
+A custom enemy for ULTRAKILL, made by me, Rem, and Hydra. As seen in Rem's [Rubicon](https://www.youtube.com/watch?v=HHN8rREyDmI)!
 
 <sub><sup>Click on the profile picture to go to our Twitter accounts.</sub></sup>
 
